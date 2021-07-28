@@ -1,0 +1,8 @@
+/dist/
+/coverage/
+/doc/
+/scripts/
+/node_modules/
+*.glsl
+*.scss
+src/esri/lib/

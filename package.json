@@ -1,0 +1,55 @@
+{
+  "name": "kml-geojson",
+  "version": "1.0.0",
+  "description": "kml与geojson互转工具类",
+  "main": "src/index.js",
+  "dependencies": {
+    "jszip": "^3.7.0",
+    "togeojson": "^0.16.0",
+    "tokml": "^0.4.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.3",
+    "@babel/eslint-parser": "^7.14.3",
+    "@babel/plugin-proposal-class-properties": "^7.14.3",
+    "@babel/plugin-transform-runtime": "^7.14.3",
+    "@babel/preset-env": "^7.14.3",
+    "babel-eslint": "^10.1.0",
+    "babel-loader": "^8.2.2",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-promise": "^4.3.1",
+    "prettier": "^2.2.1",
+    "webpack": "^4.46.0",
+    "webpack-cli": "^3.3.12"
+  },
+  "scripts": {
+    "build": "webpack --env.prod  --env.min --progress --profile --colors --config ./scripts/webpack.config.js && webpack --env.prod --progress --profile --colors --config ./scripts/webpack.config.js",
+    "build-src": "webpack --env.prod --progress --profile --colors --config ./scripts/webpack.config.js --devtool source-map",
+    "build-min": "webpack --env.prod  --env.min  --progress --profile --colors --config ./scripts/webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/muyao1987/kml-geojson.git"
+  },
+  "bugs": {
+    "url": "https://github.com/muyao1987/kml-geojson/issues",
+    "email": "wh@marsgis.cn"
+  },
+  "keywords": [
+    "marsgis",
+    "mars3d",
+    "cesium",
+    "webgl",
+    "gis",
+    "3dgis",
+    "webgis",
+    "mapv"
+  ],
+  "author": "火星科技 木遥",
+  "license": "ISC",
+  "homepage": "https://github.com/muyao1987/kml-geojson"
+}

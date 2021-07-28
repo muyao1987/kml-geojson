@@ -1,0 +1,6 @@
+/.vscode
+/.idea
+/coverage
+/api
+/node_modules
+npm-debug.log.*
