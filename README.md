@@ -1,6 +1,6 @@
-# kml-geojson
+# kml-geojson (kgUtil)
 
- KML或KMZ对象 与  GeoJSON对象 互相转换工具类 kgUtil
+ kml或kmz格式 与  GeoJSON格式 互相转换工具类(kgUtil)
 
 
 ## 运行命令
