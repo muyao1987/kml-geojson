@@ -22,7 +22,7 @@ kgUtil.toGeoJSON('//data.mars3d.cn/file/kml/NAVWARN.kmz').then((geojoson) => {
 })
 
 //加载input文件控件的二进制流
-kgUtil.toGeoJSON(e.target.files[0]).then((geojoson) => {
+kgUtil.toGeoJSON(this.files[0]).then((geojoson) => {
   console.log(geojoson) 
 })
 

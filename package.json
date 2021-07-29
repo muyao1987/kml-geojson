@@ -1,12 +1,11 @@
 {
   "name": "kml-geojson",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "kml与geojson互转工具类",
   "main": "src/index.js",
   "dependencies": {
     "jszip": "^3.7.0",
-    "togeojson": "^0.16.0",
-    "tokml": "^0.4.0"
+    "xmldom": "^0.6.0"
   },
   "devDependencies": {
     "@babel/core": "^7.14.3",
@@ -42,12 +41,10 @@
   "keywords": [
     "marsgis",
     "mars3d",
-    "cesium",
-    "webgl",
     "gis",
-    "3dgis",
-    "webgis",
-    "mapv"
+    "kml",
+    "kmz",
+    "geojson"
   ],
   "author": "火星科技 木遥",
   "license": "ISC",

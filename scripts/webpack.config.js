@@ -61,10 +61,10 @@ module.exports = function (env) {
     plugins:[
       new webpack.BannerPlugin({
         banner: `${packageInfo.description}
-  版本信息：v${packageInfo.version}, hash值: [hash]
-  编译日期：${getTime()}
-  版权所有：Copyright by 木遥 ${packageInfo.homepage}
-  `,
+版本信息：v${packageInfo.version}, hash值: [hash]
+编译日期：${getTime()}
+版权所有：Copyright by 木遥 ${packageInfo.homepage}
+`,
       }),
       new webpack.NoEmitOnErrorsPlugin()
     ],
