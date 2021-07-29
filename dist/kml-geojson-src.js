@@ -1,7 +1,7 @@
 /*!
  * kml与geojson互转工具类
- * 版本信息：v1.1.0, hash值: 470f0ffb2f6e25b8e735
- * 编译日期：2021-07-29 15:31:09
+ * 版本信息：v1.1.0, hash值: 88b586971c0c7f65f6a1
+ * 编译日期：2021-07-29 18:55:30
  * 版权所有：Copyright by 木遥 https://github.com/muyao1987/kml-geojson
  * 
  */
@@ -5856,7 +5856,8 @@ function pairs(_) {
 
 
 function encode(_) {
-  return (_ === null ? '' : _.toString()).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  if (!_) return '';
+  return _.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 /**
  * @param {array} _ an array of attributes

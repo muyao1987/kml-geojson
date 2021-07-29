@@ -307,7 +307,9 @@ function pairs(_) {
  * @returns {string}
  */
 function encode(_) {
-  return (_ === null ? '' : _.toString()).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  if(!_)return ''
+
+  return _.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 /**
@@ -347,14 +349,6 @@ function escape(string, ignore) {
   })
 }
 
-/**
- * @param {string} el element name
- * @param {array} attributes array of pairs
- * @returns {string}
- */
-function tagClose(el, attributes) {
-  return '<' + el + attr(attributes) + '/>'
-}
 
 /**
  * @param {string} el element name
