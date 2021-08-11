@@ -8,18 +8,24 @@ export function toKml(geojson, options) {
     geojson.features.forEach((feature) => {
       if (!feature.properties) return
 
-      var style = feature.properties.style
-      feature.properties = {
-        'marker-symbol': style.image || '',
-        'marker-color': style.outlineColor,
-
-        stroke: style.outlineColor,
-        'stroke-width': style.outlineWidth,
-        'stroke-opacity': style.outlineOpacity ?? style.opacity,
-
-        fill: style.color,
-        'fill-opacity': style.opacity,
+      let style = feature.properties.style
+      if(style){
+        if(style.image) {
+          feature.properties['marker-symbol'] = style.image
+          if(style.outlineColor) feature.properties['marker-color'] = style.outlineColor
+          return
+        }
+        if(style.color){
+          feature.properties['fill'] = style.color
+          if(style.opacity) feature.properties['fill-opacity'] = style.opacity
+        }
+        if(style.outlineColor) {
+          feature.properties['stroke'] = style.outlineColor
+          feature.properties['stroke-width'] = style.outlineWidth??1
+          feature.properties['stroke-opacity'] = style.outlineOpacity ?? style.opacity??1.0
+        }
       }
+
     })
   }
   return geoJSONToKml(geojson, options)

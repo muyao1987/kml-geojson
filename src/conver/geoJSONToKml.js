@@ -19,25 +19,25 @@ export function geoJSONToKml(geojson, options) {
 }
 
 function feature(options, styleHashesArray) {
-  return function (_) {
-    if (!_.properties || !geometry.valid(_.geometry)) return ''
-    var geometryString = geometry.any(_.geometry)
+  return function (attr) {
+    if (!attr.properties || !geometry.valid(attr.geometry)) return ''
+    var geometryString = geometry.any(attr.geometry)
     if (!geometryString) return ''
 
     var styleDefinition = '',
       styleReference = ''
     if (options.simplestyle) {
-      var styleHash = hashStyle(_.properties)
+      var styleHash = hashStyle(attr.properties)
       if (styleHash) {
-        if (geometry.isPoint(_.geometry) && hasMarkerStyle(_.properties)) {
+        if (geometry.isPoint(attr.geometry) && hasMarkerStyle(attr.properties)) {
           if (styleHashesArray.indexOf(styleHash) === -1) {
-            styleDefinition = markerStyle(_.properties, styleHash)
+            styleDefinition = markerStyle(attr.properties, styleHash)
             styleHashesArray.push(styleHash)
           }
           styleReference = tag('styleUrl', '#' + styleHash)
-        } else if ((geometry.isPolygon(_.geometry) || geometry.isLine(_.geometry)) && hasPolygonAndLineStyle(_.properties)) {
+        } else if ((geometry.isPolygon(attr.geometry) || geometry.isLine(attr.geometry)) && hasPolygonAndLineStyle(attr.properties)) {
           if (styleHashesArray.indexOf(styleHash) === -1) {
-            styleDefinition = polygonAndLineStyle(_.properties, styleHash)
+            styleDefinition = polygonAndLineStyle(attr.properties, styleHash)
             styleHashesArray.push(styleHash)
           }
           styleReference = tag('styleUrl', '#' + styleHash)
@@ -50,10 +50,10 @@ function feature(options, styleHashesArray) {
       styleDefinition +
       tag(
         'Placemark',
-        name(_.properties, options) +
-          description(_.properties, options) +
-          extendeddata(_.properties) +
-          timestamp(_.properties, options) +
+        name(attr.properties, options) +
+          description(attr.properties, options) +
+          extendeddata(attr.properties) +
+          timestamp(attr.properties, options) +
           geometryString +
           styleReference
       )
@@ -61,23 +61,23 @@ function feature(options, styleHashesArray) {
   }
 }
 
-function root(_, options) {
-  if (!_.type) return ''
+function root(attr, options) {
+  if (!attr.type) return ''
   var styleHashesArray = []
 
-  switch (_.type) {
+  switch (attr.type) {
     case 'FeatureCollection':
-      if (!_.features) return ''
-      return _.features.map(feature(options, styleHashesArray)).join('')
+      if (!attr.features) return ''
+      return attr.features.map(feature(options, styleHashesArray)).join('')
     case 'Feature':
-      return feature(options, styleHashesArray)(_)
+      return feature(options, styleHashesArray)(attr)
     default:
       return feature(
         options,
         styleHashesArray
       )({
         type: 'Feature',
-        geometry: _,
+        geometry: attr,
         properties: {},
       })
   }
@@ -91,32 +91,32 @@ function documentDescription(options) {
   return options.documentDescription !== undefined ? tag('description', options.documentDescription) : ''
 }
 
-function name(_, options) {
-  return _[options.name] ? tag('name', encode(_[options.name])) : ''
+function name(attr, options) {
+  return attr[options.name] ? tag('name', encode(attr[options.name])) : ''
 }
 
-function description(_, options) {
-  return _[options.description] ? tag('description', encode(_[options.description])) : ''
+function description(attr, options) {
+  return attr[options.description] ? tag('description', encode(attr[options.description])) : ''
 }
 
-function timestamp(_, options) {
-  return _[options.timestamp] ? tag('TimeStamp', tag('when', encode(_[options.timestamp]))) : ''
+function timestamp(attr, options) {
+  return attr[options.timestamp] ? tag('TimeStamp', tag('when', encode(attr[options.timestamp]))) : ''
 }
 
 // ## Geometry Types
 //
 // https://developers.google.com/kml/documentation/kmlreference#geometry
 var geometry = {
-  Point: function (_) {
-    return tag('Point', tag('coordinates', _.coordinates.join(',')))
+  Point: function (attr) {
+    return tag('Point', tag('coordinates', attr.coordinates.join(',')))
   },
-  LineString: function (_) {
-    return tag('LineString', tag('coordinates', linearring(_.coordinates)))
+  LineString: function (attr) {
+    return tag('LineString', tag('coordinates', linearring(attr.coordinates)))
   },
-  Polygon: function (_) {
-    if (!_.coordinates.length) return ''
-    var outer = _.coordinates[0],
-      inner = _.coordinates.slice(1),
+  Polygon: function (attr) {
+    if (!attr.coordinates.length) return ''
+    var outer = attr.coordinates[0],
+      inner = attr.coordinates.slice(1),
       outerRing = tag('outerBoundaryIs', tag('LinearRing', tag('coordinates', linearring(outer)))),
       innerRings = inner
         .map(function (i) {
@@ -125,96 +125,105 @@ var geometry = {
         .join('')
     return tag('Polygon', outerRing + innerRings)
   },
-  MultiPoint: function (_) {
-    if (!_.coordinates.length) return ''
+  MultiPoint: function (attr) {
+    if (!attr.coordinates.length) return ''
     return tag(
       'MultiGeometry',
-      _.coordinates
+      attr.coordinates
         .map(function (c) {
           return geometry.Point({ coordinates: c })
         })
         .join('')
     )
   },
-  MultiPolygon: function (_) {
-    if (!_.coordinates.length) return ''
+  MultiPolygon: function (attr) {
+    if (!attr.coordinates.length) return ''
     return tag(
       'MultiGeometry',
-      _.coordinates
+      attr.coordinates
         .map(function (c) {
           return geometry.Polygon({ coordinates: c })
         })
         .join('')
     )
   },
-  MultiLineString: function (_) {
-    if (!_.coordinates.length) return ''
+  MultiLineString: function (attr) {
+    if (!attr.coordinates.length) return ''
     return tag(
       'MultiGeometry',
-      _.coordinates
+      attr.coordinates
         .map(function (c) {
           return geometry.LineString({ coordinates: c })
         })
         .join('')
     )
   },
-  GeometryCollection: function (_) {
-    return tag('MultiGeometry', _.geometries.map(geometry.any).join(''))
+  GeometryCollection: function (attr) {
+    return tag('MultiGeometry', attr.geometries.map(geometry.any).join(''))
   },
-  valid: function (_) {
-    return _ && _.type && (_.coordinates || (_.type === 'GeometryCollection' && _.geometries && _.geometries.every(geometry.valid)))
+  valid: function (attr) {
+    return attr && attr.type && (attr.coordinates || (attr.type === 'GeometryCollection' && attr.geometries && attr.geometries.every(geometry.valid)))
   },
-  any: function (_) {
-    if (geometry[_.type]) {
-      return geometry[_.type](_)
+  any: function (attr) {
+    if (geometry[attr.type]) {
+      return geometry[attr.type](attr)
     } else {
       return ''
     }
   },
-  isPoint: function (_) {
-    return _.type === 'Point' || _.type === 'MultiPoint'
+  isPoint: function (attr) {
+    return attr.type === 'Point' || attr.type === 'MultiPoint'
   },
-  isPolygon: function (_) {
-    return _.type === 'Polygon' || _.type === 'MultiPolygon'
+  isPolygon: function (attr) {
+    return attr.type === 'Polygon' || attr.type === 'MultiPolygon'
   },
-  isLine: function (_) {
-    return _.type === 'LineString' || _.type === 'MultiLineString'
+  isLine: function (attr) {
+    return attr.type === 'LineString' || attr.type === 'MultiLineString'
   },
 }
 
-function linearring(_) {
-  return _.map(function (cds) {
+function linearring(attr) {
+  return attr.map(function (cds) {
     return cds.join(',')
   }).join(' ')
 }
 
 // ## Data
-function extendeddata(_) {
-  return tag('ExtendedData', pairs(_).map(data).join(''))
+function extendeddata(attr) {
+  let arr =[]
+  for (var i in attr) {
+    let val =  attr[i]
+    if(isObject(val)){
+      arr.push(`<Data name ="${i}"><value>${JSON.stringify(val)}</value></Data>`)
+    }else{
+      arr.push(`<Data name ="${i}"><value>${val}</value></Data>`)
+    }
+  }
+  return tag('ExtendedData', arr.join(''))
 }
 
-function data(_) {
-  return tag('Data', tag('value', encode(_[1])), [['name', encode(_[0])]])
+function data(attr) {
+  return tag('Data', tag('value', encode(attr[1])), [['name', encode(attr[0])]])
 }
 
 // ## Marker style
-function hasMarkerStyle(_) {
-  return !!(_['marker-size'] || _['marker-symbol'] || _['marker-color'])
+function hasMarkerStyle(attr) {
+  return !!(attr['marker-size'] || attr['marker-symbol'] || attr['marker-color'])
 }
 
-function markerStyle(_, styleHash) {
-  return tag('Style', tag('IconStyle', tag('Icon', tag('href', iconUrl(_)))) + iconSize(_), [['id', styleHash]])
+function markerStyle(attr, styleHash) {
+  return tag('Style', tag('IconStyle', tag('Icon', tag('href', iconUrl(attr)))) + iconSize(attr), [['id', styleHash]])
 }
 
-function iconUrl(_) {
-  var size = _['marker-size'] || 'medium',
-    symbol = _['marker-symbol'] ? '-' + _['marker-symbol'] : '',
-    color = (_['marker-color'] || '7e7e7e').replace('#', '')
-
-  return 'https://api.tiles.mapbox.com/v3/marker/' + 'pin-' + size.charAt(0) + symbol + '+' + color + '.png'
+function iconUrl(attr) {
+  return attr['marker-symbol']
+  // var size = attr['marker-size'] || 'medium',
+  //   symbol = attr['marker-symbol'] ? '-' + attr['marker-symbol'] : '',
+  //   color = (attr['marker-color'] || '7e7e7e').replace('#', '')
+  // return 'https://api.tiles.mapbox.com/v3/marker/' + 'pin-' + size.charAt(0) + symbol + '+' + color + '.png'
 }
 
-function iconSize(_) {
+function iconSize(attr) {
   return tag('hotSpot', '', [
     ['xunits', 'fraction'],
     ['yunits', 'fraction'],
@@ -224,8 +233,8 @@ function iconSize(_) {
 }
 
 // ## Polygon and Line style
-function hasPolygonAndLineStyle(_) {
-  for (var key in _) {
+function hasPolygonAndLineStyle(attr) {
+  for (var key in attr) {
     if (
       {
         stroke: true,
@@ -239,33 +248,33 @@ function hasPolygonAndLineStyle(_) {
   }
 }
 
-function polygonAndLineStyle(_, styleHash) {
+function polygonAndLineStyle(attr, styleHash) {
   var lineStyle = tag('LineStyle', [
-    tag('color', hexToKmlColor(_['stroke'], _['stroke-opacity']) || 'ff555555') +
-      tag('width', _['stroke-width'] === undefined ? 2 : _['stroke-width']),
+    tag('color', hexToKmlColor(attr['stroke'], attr['stroke-opacity']) || 'ff555555') +
+      tag('width', attr['stroke-width'] === undefined ? 2 : attr['stroke-width']),
   ])
 
   var polyStyle = ''
 
-  if (_['fill'] || _['fill-opacity']) {
-    polyStyle = tag('PolyStyle', [tag('color', hexToKmlColor(_['fill'], _['fill-opacity']) || '88555555')])
+  if (attr['fill'] || attr['fill-opacity']) {
+    polyStyle = tag('PolyStyle', [tag('color', hexToKmlColor(attr['fill'], attr['fill-opacity']) || '88555555')])
   }
 
   return tag('Style', lineStyle + polyStyle, [['id', styleHash]])
 }
 
 // ## Style helpers
-function hashStyle(_) {
+function hashStyle(attr) {
   var hash = ''
 
-  if (_['marker-symbol']) hash = hash + 'ms' + _['marker-symbol']
-  if (_['marker-color']) hash = hash + 'mc' + _['marker-color'].replace('#', '')
-  if (_['marker-size']) hash = hash + 'ms' + _['marker-size']
-  if (_['stroke']) hash = hash + 's' + _['stroke'].replace('#', '')
-  if (_['stroke-width']) hash = hash + 'sw' + _['stroke-width'].toString().replace('.', '')
-  if (_['stroke-opacity']) hash = hash + 'mo' + _['stroke-opacity'].toString().replace('.', '')
-  if (_['fill']) hash = hash + 'f' + _['fill'].replace('#', '')
-  if (_['fill-opacity']) hash = hash + 'fo' + _['fill-opacity'].toString().replace('.', '')
+  if (attr['marker-symbol']) hash = hash + 'ms' + attr['marker-symbol']
+  if (attr['marker-color']) hash = hash + 'mc' + attr['marker-color'].replace('#', '')
+  if (attr['marker-size']) hash = hash + 'ms' + attr['marker-size']
+  if (attr['stroke']) hash = hash + 's' + attr['stroke'].replace('#', '')
+  if (attr['stroke-width']) hash = hash + 'sw' + attr['stroke-width'].toString().replace('.', '')
+  if (attr['stroke-opacity']) hash = hash + 'mo' + attr['stroke-opacity'].toString().replace('.', '')
+  if (attr['fill']) hash = hash + 'f' + attr['fill'].replace('#', '')
+  if (attr['fill-opacity']) hash = hash + 'fo' + attr['fill-opacity'].toString().replace('.', '')
 
   return hash
 }
@@ -295,25 +304,29 @@ function hexToKmlColor(hexColor, opacity) {
   return o + b + g + r
 }
 
-// ## General helpers
-function pairs(_) {
-  var o = []
-  for (var i in _) o.push([i, _[i]])
-  return o
+
+
+/**
+ * 判断对象是否为Object类型
+ * @param {*} obj 对象
+ * @returns {Boolean} 是否为Object类型
+ */
+ export function isObject(obj) {
+  return Object.prototype.toString.call(obj) === '[object Object]'
 }
 
 /**
- * @param {string} _ a string of attribute
+ * @param {string} attr a string of attribute
  * @returns {string}
  */
-function encode(_) {
-  if(!_)return ''
+function encode(attr) {
+  if(!attr)return ''
 
-  return _.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  return attr.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 /**
- * @param {array} _ an array of attributes
+ * @param {array} attr an array of attributes
  * @returns {string}
  */
 function attr(attributes) {

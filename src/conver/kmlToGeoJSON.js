@@ -47,21 +47,23 @@ function nodeVal(x) {
   }
   return (x && x.textContent) || ''
 }
+
 // get the contents of multiple text nodes, if present
-function getMulti(x, ys) {
-  var o = {},
-    n,
-    k
-  for (k = 0; k < ys.length; k++) {
-    n = get1(x, ys[k])
-    if (n) o[ys[k]] = nodeVal(n)
-  }
-  return o
-}
+// function getMulti(x, ys) {
+//   var o = {},
+//     n,
+//     k
+//   for (k = 0; k < ys.length; k++) {
+//     n = get1(x, ys[k])
+//     if (n) o[ys[k]] = nodeVal(n)
+//   }
+//   return o
+// }
+
 // add properties of Y to X, overwriting if present in both
-function extend(x, y) {
-  for (var k in y) x[k] = y[k]
-}
+// function extend(x, y) {
+//   for (var k in y) x[k] = y[k]
+// }
 // get one coordinate from a coordinate array, if any
 function coord1(v) {
   return numarray(v.replace(removeSpace, '').split(','))
@@ -75,25 +77,25 @@ function coord(v) {
   }
   return o
 }
-function coordPair(x) {
-  var ll = [attrf(x, 'lon'), attrf(x, 'lat')],
-    ele = get1(x, 'ele'),
-    // handle namespaced attribute in browser
-    heartRate = get1(x, 'gpxtpx:hr') || get1(x, 'hr'),
-    time = get1(x, 'time'),
-    e
-  if (ele) {
-    e = parseFloat(nodeVal(ele))
-    if (!isNaN(e)) {
-      ll.push(e)
-    }
-  }
-  return {
-    coordinates: ll,
-    time: time ? nodeVal(time) : null,
-    heartRate: heartRate ? parseFloat(nodeVal(heartRate)) : null,
-  }
-}
+// function coordPair(x) {
+//   var ll = [attrf(x, 'lon'), attrf(x, 'lat')],
+//     ele = get1(x, 'ele'),
+//     // handle namespaced attribute in browser
+//     heartRate = get1(x, 'gpxtpx:hr') || get1(x, 'hr'),
+//     time = get1(x, 'time'),
+//     e
+//   if (ele) {
+//     e = parseFloat(nodeVal(ele))
+//     if (!isNaN(e)) {
+//       ll.push(e)
+//     }
+//   }
+//   return {
+//     coordinates: ll,
+//     time: time ? nodeVal(time) : null,
+//     heartRate: heartRate ? parseFloat(nodeVal(heartRate)) : null,
+//   }
+// }
 
 // create a new feature collection parent object
 function fc() {
@@ -311,10 +313,20 @@ export function kmlToGeoJSON(doc) {
         simpleDatas = get(extendedData, 'SimpleData')
 
       for (i = 0; i < datas.length; i++) {
-        properties[datas[i].getAttribute('name')] = nodeVal(get1(datas[i], 'value'))
+        let name = datas[i].getAttribute('name')
+        let val =  nodeVal(get1(datas[i], 'value'))
+        try{
+          val = JSON.parse(val)
+        }catch(e){}
+        properties[name] =val
       }
       for (i = 0; i < simpleDatas.length; i++) {
-        properties[simpleDatas[i].getAttribute('name')] = nodeVal(simpleDatas[i])
+        let name =simpleDatas[i].getAttribute('name')
+        let val = nodeVal(simpleDatas[i])
+        try{
+          val = JSON.parse(val)
+        }catch(e){}
+        properties[name] = val
       }
     }
     if (visibility) {
