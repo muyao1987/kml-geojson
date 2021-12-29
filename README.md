@@ -13,6 +13,19 @@
 
 
 ## 使用示例
+
+### 安装及引入
+安装包
+```hash
+npm install kml-geojson -save 
+```
+
+引入包
+```js
+import * as kgUtil from './conver/geoJSONToKml' 
+//或者
+//import {toGeoJSON,tokml} from './conver/geoJSONToKml'
+```
  
 ### KML转GeoJSON示例：
 ```js

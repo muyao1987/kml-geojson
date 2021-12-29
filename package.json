@@ -1,8 +1,11 @@
 {
   "name": "kml-geojson",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "kml与geojson互转工具类",
-  "main": "src/index.js",
+  "main": "dist/kml-geojson-src.js",
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "jszip": "^3.7.0",
     "xmldom": "^0.6.0"

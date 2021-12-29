@@ -53,11 +53,11 @@ export function toGeoJSON(doc) {
 
   if (isString(doc)) {
     let extension = getExtension(doc)
-    if (extension === 'kml') {
+    if (extension === 'kml' && window.Cesium) {
       return Cesium.Resource.fetchXML(doc).then(function (kmlDom) {
         return kmlToGeoJSON(kmlDom)
       })
-    } else if (extension === 'kmz') {
+    } else if (extension === 'kmz' && window.Cesium) {
       return Cesium.Resource.fetchBlob(doc)
         .then(function (xml) {
           return getKmlDom(xml)
