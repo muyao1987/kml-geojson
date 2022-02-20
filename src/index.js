@@ -24,6 +24,9 @@ export function toKml(geojson, options) {
           feature.properties['stroke-width'] = style.outlineWidth??1
           feature.properties['stroke-opacity'] = style.outlineOpacity ?? style.opacity??1.0
         }
+        if(style.html){
+          style.html = HTMLEncode(style.html)
+        }
       }
 
     })
@@ -85,3 +88,10 @@ export function toGeoJSON(doc) {
 function isString(str) {
   return typeof str == 'string' && str.constructor == String
 }
+
+function HTMLEncode(html) {
+  var temp = document.createElement("div");
+  (temp.textContent != null) ? (temp.textContent = html) : (temp.innerText = html);
+  var output = temp.innerHTML;
+  return output;
+ }
