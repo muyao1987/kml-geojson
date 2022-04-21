@@ -50,6 +50,6 @@
     "geojson"
   ],
   "author": "火星科技 木遥",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "homepage": "https://github.com/muyao1987/kml-geojson"
 }
