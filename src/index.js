@@ -6,32 +6,42 @@ import { geoJSONToKml } from './conver/geoJSONToKml'
 export function toKml(geojson, options) {
   if (geojson.features) {
     geojson.features.forEach((feature) => {
-      if (!feature.properties) return
-
-      let style = feature.properties.style
-      if(style){
-        if(style.image) {
-          feature.properties['marker-symbol'] = style.image
-          if(style.outlineColor) feature.properties['marker-color'] = style.outlineColor
-          return
-        }
-        if(style.color){
-          feature.properties['fill'] = style.color
-          if(style.opacity) feature.properties['fill-opacity'] = style.opacity
-        }
-        if(style.outlineColor) {
-          feature.properties['stroke'] = style.outlineColor
-          feature.properties['stroke-width'] = style.outlineWidth??1
-          feature.properties['stroke-opacity'] = style.outlineOpacity ?? style.opacity??1.0
-        }
-        if(style.html){
-          style.html = HTMLEncode(style.html)
-        }
-      }
-
+      updateFeatureByStyle(feature)
     })
+  } else {
+    updateFeatureByStyle(geojson)
   }
   return geoJSONToKml(geojson, options)
+}
+
+function updateFeatureByStyle(feature) {
+  if (!feature.properties) return
+
+  let style = feature.properties.style
+  if (style) {
+    if (style.image) {
+      feature.properties['marker-symbol'] = style.image
+      if (style.outlineColor) feature.properties['marker-color'] = style.outlineColor
+      return
+    }
+    if (style.color) {
+      feature.properties['fill'] = style.color
+      if (style.opacity) feature.properties['fill-opacity'] = style.opacity
+    }
+    if (style.outlineColor) {
+      feature.properties['stroke'] = style.outlineColor
+      feature.properties['stroke-width'] = style.outlineWidth ?? 1
+      feature.properties['stroke-opacity'] = style.outlineOpacity ?? style.opacity ?? 1.0
+    }
+    if (style.html) {
+      style.html = HTMLEncode(style.html)
+    }
+
+    //闭合线特殊处理
+    if (style.closure && feature.geometry?.coordinates?.length > 0) {
+      feature.geometry.coordinates.push(feature.geometry.coordinates[0])
+    }
+  }
 }
 
 let getDom = (xml) => new DOMParser().parseFromString(xml, 'text/xml')
@@ -90,8 +100,8 @@ function isString(str) {
 }
 
 function HTMLEncode(html) {
-  var temp = document.createElement("div");
-  (temp.textContent != null) ? (temp.textContent = html) : (temp.innerText = html);
-  var output = temp.innerHTML;
-  return output;
- }
+  var temp = document.createElement('div')
+  temp.textContent != null ? (temp.textContent = html) : (temp.innerText = html)
+  var output = temp.innerHTML
+  return output
+}
