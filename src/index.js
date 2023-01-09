@@ -42,6 +42,33 @@ function updateFeatureByStyle(feature) {
       feature.geometry.coordinates.push(feature.geometry.coordinates[0])
     }
   }
+
+  let type = feature?.properties?.type
+  if (type == 'polygon') {
+    let arr = feature.geometry.coordinates[0]
+    if (arr?.length > 2) {
+      arr.push(arr[0])
+    }
+  } else if (type == 'rectangle') {
+    let coors = feature.geometry.coordinates
+    const xmin = coors[0][0]
+    const xmax = coors[1][0]
+    const ymin = coors[0][1]
+    const ymax = coors[1][1]
+
+    feature.geometry = {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [xmin, ymax],
+          [xmin, ymin],
+          [xmax, ymin],
+          [xmax, ymax],
+          [xmin, ymax],
+        ],
+      ],
+    }
+  }
 }
 
 let getDom = (xml) => new DOMParser().parseFromString(xml, 'text/xml')
