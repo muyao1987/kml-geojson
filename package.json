@@ -31,7 +31,8 @@
   "scripts": {
     "build": "webpack --env.prod  --env.min --progress --profile --colors --config ./scripts/webpack.config.js && webpack --env.prod --progress --profile --colors --config ./scripts/webpack.config.js",
     "build-src": "webpack --env.prod --progress --profile --colors --config ./scripts/webpack.config.js --devtool source-map",
-    "build-min": "webpack --env.prod  --env.min  --progress --profile --colors --config ./scripts/webpack.config.js"
+    "build-min": "webpack --env.prod  --env.min  --progress --profile --colors --config ./scripts/webpack.config.js",
+    "push": "npm publish --access public"
   },
   "repository": {
     "type": "git",
