@@ -71,7 +71,7 @@ function updateFeatureByStyle(feature) {
   }
 }
 
-let getDom = (xml) => new DOMParser().parseFromString(xml, 'text/xml')
+let getDom = (xml) => new DOMParser().parseFromString(xml, 'application/xml')
 let getExtension = (fileName) => fileName.split('.').pop()
 
 let getKmlDom = (kmzFile) => {
@@ -139,7 +139,9 @@ function fetchXML(url) {
     headers: { 'Content-Type': 'application/xml' },
   }
   return fetch(url, requestOptions).then((response) => {
-    return getDom(response.text())
+    return response.text()
+  }).then((doc) => {
+    return getDom(doc)
   })
 }
 

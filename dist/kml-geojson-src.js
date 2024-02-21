@@ -1,7 +1,7 @@
 /*!
  * kml与geojson互转工具类
- * 版本信息：v1.2.2, hash值: d360e0ddba5996eca83c
- * 编译日期：2023-05-05 12:41:40
+ * 版本信息：v1.3.0, hash值: e00bb26ff1f1a149d1e4
+ * 编译日期：2024-02-21 22:42:54
  * 版权所有：Copyright by 木遥 https://github.com/muyao1987/kml-geojson
  * 
  */
@@ -111,56 +111,65 @@ return /******/ (function(modules) { // webpackBootstrap
 /* harmony import */ var _babel_runtime_helpers_typeof__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_typeof__WEBPACK_IMPORTED_MODULE_0__);
 
 // kml  =>  geojson
-
 var removeSpace = /\s*/g,
-  trimSpace = /^\s*|\s*$/g,
-  splitSpace = /\s+/;
-// generate a short, numeric hash of a string
+    trimSpace = /^\s*|\s*$/g,
+    splitSpace = /\s+/; // generate a short, numeric hash of a string
+
 function okhash(x) {
   if (!x || !x.length) return 0;
+
   for (var i = 0, h = 0; i < x.length; i++) {
     h = (h << 5) - h + x.charCodeAt(i) | 0;
   }
+
   return h;
-}
-// all Y children of X
+} // all Y children of X
+
+
 function get(x, y) {
   return x.getElementsByTagName(y);
 }
+
 function attr(x, y) {
   return x.getAttribute(y);
 }
+
 function attrf(x, y) {
   return parseFloat(attr(x, y));
-}
-// one Y child of X, if any, otherwise null
+} // one Y child of X, if any, otherwise null
+
+
 function get1(x, y) {
   var n = get(x, y);
   return n.length ? n[0] : null;
-}
-// https://developer.mozilla.org/en-US/docs/Web/API/Node.normalize
+} // https://developer.mozilla.org/en-US/docs/Web/API/Node.normalize
+
+
 function norm(el) {
   if (el.normalize) {
     el.normalize();
   }
+
   return el;
-}
-// cast array x into numbers
+} // cast array x into numbers
+
+
 function numarray(x) {
   for (var j = 0, o = []; j < x.length; j++) {
     o[j] = parseFloat(x[j]);
   }
+
   return o;
-}
-// get the content of a text node, if any
+} // get the content of a text node, if any
+
+
 function nodeVal(x) {
   if (x) {
     norm(x);
   }
-  return x && x.textContent || '';
-}
 
-// get the contents of multiple text nodes, if present
+  return x && x.textContent || '';
+} // get the contents of multiple text nodes, if present
 // function getMulti(x, ys) {
 //   var o = {},
 //     n,
@@ -171,25 +180,28 @@ function nodeVal(x) {
 //   }
 //   return o
 // }
-
 // add properties of Y to X, overwriting if present in both
 // function extend(x, y) {
 //   for (var k in y) x[k] = y[k]
 // }
 // get one coordinate from a coordinate array, if any
+
+
 function coord1(v) {
   return numarray(v.replace(removeSpace, '').split(','));
-}
-// get all coordinates from a coordinate array as [[],[]]
+} // get all coordinates from a coordinate array as [[],[]]
+
+
 function coord(v) {
   var coords = v.replace(trimSpace, '').split(splitSpace),
-    o = [];
+      o = [];
+
   for (var i = 0; i < coords.length; i++) {
     o.push(coord1(coords[i]));
   }
+
   return o;
-}
-// function coordPair(x) {
+} // function coordPair(x) {
 //   var ll = [attrf(x, 'lon'), attrf(x, 'lat')],
 //     ele = get1(x, 'ele'),
 //     // handle namespaced attribute in browser
@@ -208,113 +220,145 @@ function coord(v) {
 //     heartRate: heartRate ? parseFloat(nodeVal(heartRate)) : null,
 //   }
 // }
-
 // create a new feature collection parent object
+
+
 function fc() {
   return {
     type: 'FeatureCollection',
     features: []
   };
 }
+
 var serializer;
+
 if (typeof XMLSerializer !== 'undefined') {
   /* istanbul ignore next */
-  serializer = new XMLSerializer();
-  // only require xmldom in a node environment
+  serializer = new XMLSerializer(); // only require xmldom in a node environment
 } else if ((typeof exports === "undefined" ? "undefined" : _babel_runtime_helpers_typeof__WEBPACK_IMPORTED_MODULE_0___default()(exports)) === 'object' && (typeof process === "undefined" ? "undefined" : _babel_runtime_helpers_typeof__WEBPACK_IMPORTED_MODULE_0___default()(process)) === 'object' && !process.browser) {
   serializer = new (__webpack_require__(13).XMLSerializer)();
 }
+
 function xml2str(str) {
   // IE9 will create a new XMLSerializer but it'll crash immediately.
   // This line is ignored because we don't run coverage tests in IE9
+
   /* istanbul ignore next */
   if (str.xml !== undefined) return str.xml;
   return serializer.serializeToString(str);
 }
+
 function kmlToGeoJSON(doc) {
   var gj = fc(),
-    // styleindex keeps track of hashed styles in order to match features
-    styleIndex = {},
-    styleByHash = {},
-    // stylemapindex keeps track of style maps to expose in properties
-    styleMapIndex = {},
-    // atomic geospatial types supported by KML - MultiGeometry is
-    // handled separately
-    geotypes = ['Polygon', 'LineString', 'Point', 'Track', 'gx:Track'],
-    // all root placemarks in the file
-    placemarks = get(doc, 'Placemark'),
-    styles = get(doc, 'Style'),
-    styleMaps = get(doc, 'StyleMap');
+      // styleindex keeps track of hashed styles in order to match features
+  styleIndex = {},
+      styleByHash = {},
+      // stylemapindex keeps track of style maps to expose in properties
+  styleMapIndex = {},
+      // atomic geospatial types supported by KML - MultiGeometry is
+  // handled separately
+  geotypes = ['Polygon', 'LineString', 'Point', 'Track', 'gx:Track'],
+      // all root placemarks in the file
+  placemarks = get(doc, 'Placemark'),
+      styles = get(doc, 'Style'),
+      styleMaps = get(doc, 'StyleMap');
+
   for (var k = 0; k < styles.length; k++) {
     var hash = okhash(xml2str(styles[k])).toString(16);
     styleIndex['#' + attr(styles[k], 'id')] = hash;
     styleByHash[hash] = styles[k];
   }
+
   for (var l = 0; l < styleMaps.length; l++) {
     styleIndex['#' + attr(styleMaps[l], 'id')] = okhash(xml2str(styleMaps[l])).toString(16);
     var pairs = get(styleMaps[l], 'Pair');
     var pairsMap = {};
+
     for (var m = 0; m < pairs.length; m++) {
       pairsMap[nodeVal(get1(pairs[m], 'key'))] = nodeVal(get1(pairs[m], 'styleUrl'));
     }
+
     styleMapIndex['#' + attr(styleMaps[l], 'id')] = pairsMap;
   }
+
   for (var j = 0; j < placemarks.length; j++) {
     gj.features = gj.features.concat(getPlacemark(placemarks[j]));
   }
+
   function kmlColor(v) {
     var color, opacity;
     v = v || '';
+
     if (v.substr(0, 1) === '#') {
       v = v.substr(1);
     }
+
     if (v.length === 6 || v.length === 3) {
       color = v;
     }
+
     if (v.length === 8) {
       opacity = parseInt(v.substr(0, 2), 16) / 255;
       color = '#' + v.substr(6, 2) + v.substr(4, 2) + v.substr(2, 2);
     }
+
     return [color, isNaN(opacity) ? undefined : opacity];
   }
+
   function gxCoord(v) {
     return numarray(v.split(' '));
   }
+
   function gxCoords(root) {
     var elems = get(root, 'coord', 'gx'),
-      coords = [],
-      times = [];
+        coords = [],
+        times = [];
     if (elems.length === 0) elems = get(root, 'gx:coord');
-    for (var i = 0; i < elems.length; i++) coords.push(gxCoord(nodeVal(elems[i])));
+
+    for (var i = 0; i < elems.length; i++) {
+      coords.push(gxCoord(nodeVal(elems[i])));
+    }
+
     var timeElems = get(root, 'when');
-    for (var j = 0; j < timeElems.length; j++) times.push(nodeVal(timeElems[j]));
+
+    for (var j = 0; j < timeElems.length; j++) {
+      times.push(nodeVal(timeElems[j]));
+    }
+
     return {
       coords: coords,
       times: times
     };
   }
+
   function getGeometry(root) {
     var geomNode,
-      geomNodes,
-      i,
-      j,
-      k,
-      geoms = [],
-      coordTimes = [];
+        geomNodes,
+        i,
+        j,
+        k,
+        geoms = [],
+        coordTimes = [];
+
     if (get1(root, 'MultiGeometry')) {
       return getGeometry(get1(root, 'MultiGeometry'));
     }
+
     if (get1(root, 'MultiTrack')) {
       return getGeometry(get1(root, 'MultiTrack'));
     }
+
     if (get1(root, 'gx:MultiTrack')) {
       return getGeometry(get1(root, 'gx:MultiTrack'));
     }
+
     for (i = 0; i < geotypes.length; i++) {
       geomNodes = get(root, geotypes[i]);
+
       if (geomNodes) {
         for (j = 0; j < geomNodes.length; j++) {
           geomNode = geomNodes[j];
+
           if (geotypes[i] === 'Point') {
             geoms.push({
               type: 'Point',
@@ -327,10 +371,12 @@ function kmlToGeoJSON(doc) {
             });
           } else if (geotypes[i] === 'Polygon') {
             var rings = get(geomNode, 'LinearRing'),
-              coords = [];
+                coords = [];
+
             for (k = 0; k < rings.length; k++) {
               coords.push(coord(nodeVal(get1(rings[k], 'coordinates'))));
             }
+
             geoms.push({
               type: 'Polygon',
               coordinates: coords
@@ -346,46 +392,56 @@ function kmlToGeoJSON(doc) {
         }
       }
     }
+
     return {
       geoms: geoms,
       coordTimes: coordTimes
     };
   }
+
   function getPlacemark(root) {
     var geomsAndTimes = getGeometry(root),
-      i,
-      properties = {},
-      name = nodeVal(get1(root, 'name')),
-      styleUrl = nodeVal(get1(root, 'styleUrl')),
-      description = nodeVal(get1(root, 'description')),
-      timeSpan = get1(root, 'TimeSpan'),
-      timeStamp = get1(root, 'TimeStamp'),
-      extendedData = get1(root, 'ExtendedData'),
-      lineStyle = get1(root, 'LineStyle'),
-      polyStyle = get1(root, 'PolyStyle'),
-      visibility = get1(root, 'visibility');
+        i,
+        properties = {},
+        name = nodeVal(get1(root, 'name')),
+        styleUrl = nodeVal(get1(root, 'styleUrl')),
+        description = nodeVal(get1(root, 'description')),
+        timeSpan = get1(root, 'TimeSpan'),
+        timeStamp = get1(root, 'TimeStamp'),
+        extendedData = get1(root, 'ExtendedData'),
+        lineStyle = get1(root, 'LineStyle'),
+        polyStyle = get1(root, 'PolyStyle'),
+        visibility = get1(root, 'visibility');
     if (!geomsAndTimes.geoms.length) return [];
     if (name) properties.name = name;
+
     if (styleUrl) {
       if (styleUrl[0] !== '#') {
         styleUrl = '#' + styleUrl;
       }
+
       properties.styleUrl = styleUrl;
+
       if (styleIndex[styleUrl]) {
         properties.styleHash = styleIndex[styleUrl];
       }
+
       if (styleMapIndex[styleUrl]) {
         properties.styleMapHash = styleMapIndex[styleUrl];
         properties.styleHash = styleIndex[styleMapIndex[styleUrl].normal];
-      }
-      // Try to populate the lineStyle or polyStyle since we got the style hash
+      } // Try to populate the lineStyle or polyStyle since we got the style hash
+
+
       var style = styleByHash[properties.styleHash];
+
       if (style) {
         if (!lineStyle) lineStyle = get1(style, 'LineStyle');
         if (!polyStyle) polyStyle = get1(style, 'PolyStyle');
       }
     }
+
     if (description) properties.description = description;
+
     if (timeSpan) {
       var begin = nodeVal(get1(timeSpan, 'begin'));
       var end = nodeVal(get1(timeSpan, 'end'));
@@ -394,55 +450,70 @@ function kmlToGeoJSON(doc) {
         end: end
       };
     }
+
     if (timeStamp) {
       properties.timestamp = nodeVal(get1(timeStamp, 'when'));
     }
+
     if (lineStyle) {
       var linestyles = kmlColor(nodeVal(get1(lineStyle, 'color'))),
-        color = linestyles[0],
-        opacity = linestyles[1],
-        width = parseFloat(nodeVal(get1(lineStyle, 'width')));
+          color = linestyles[0],
+          opacity = linestyles[1],
+          width = parseFloat(nodeVal(get1(lineStyle, 'width')));
       if (color) properties.stroke = color;
       if (!isNaN(opacity)) properties['stroke-opacity'] = opacity;
       if (!isNaN(width)) properties['stroke-width'] = width;
     }
+
     if (polyStyle) {
       var polystyles = kmlColor(nodeVal(get1(polyStyle, 'color'))),
-        pcolor = polystyles[0],
-        popacity = polystyles[1],
-        fill = nodeVal(get1(polyStyle, 'fill')),
-        outline = nodeVal(get1(polyStyle, 'outline'));
+          pcolor = polystyles[0],
+          popacity = polystyles[1],
+          fill = nodeVal(get1(polyStyle, 'fill')),
+          outline = nodeVal(get1(polyStyle, 'outline'));
       if (pcolor) properties.fill = pcolor;
       if (!isNaN(popacity)) properties['fill-opacity'] = popacity;
       if (fill) properties['fill-opacity'] = fill === '1' ? properties['fill-opacity'] || 1 : 0;
       if (outline) properties['stroke-opacity'] = outline === '1' ? properties['stroke-opacity'] || 1 : 0;
     }
+
     if (extendedData) {
       var datas = get(extendedData, 'Data'),
-        simpleDatas = get(extendedData, 'SimpleData');
+          simpleDatas = get(extendedData, 'SimpleData');
+
       for (i = 0; i < datas.length; i++) {
         var _name = datas[i].getAttribute('name');
+
         var val = nodeVal(get1(datas[i], 'value'));
+
         try {
           val = JSON.parse(val);
         } catch (e) {}
+
         properties[_name] = val;
       }
+
       for (i = 0; i < simpleDatas.length; i++) {
         var _name2 = simpleDatas[i].getAttribute('name');
+
         var _val = nodeVal(simpleDatas[i]);
+
         try {
           _val = JSON.parse(_val);
         } catch (e) {}
+
         properties[_name2] = _val;
       }
     }
+
     if (visibility) {
       properties.visibility = nodeVal(visibility);
     }
+
     if (geomsAndTimes.coordTimes.length) {
       properties.coordTimes = geomsAndTimes.coordTimes.length === 1 ? geomsAndTimes.coordTimes[0] : geomsAndTimes.coordTimes;
     }
+
     var feature = {
       type: 'Feature',
       geometry: geomsAndTimes.geoms.length === 1 ? geomsAndTimes.geoms[0] : {
@@ -454,6 +525,7 @@ function kmlToGeoJSON(doc) {
     if (attr(root, 'id')) feature.id = attr(root, 'id');
     return [feature];
   }
+
   return gj;
 }
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(2)))
@@ -687,6 +759,7 @@ function _typeof(obj) {
     return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   }, module.exports.__esModule = true, module.exports["default"] = module.exports), _typeof(obj);
 }
+
 module.exports = _typeof, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ }),
@@ -5506,7 +5579,6 @@ var kmlToGeoJSON = __webpack_require__(0);
 
 // CONCATENATED MODULE: ./src/conver/geoJSONToKml.js
 //geojson =>  kml
-
 function geoJSONToKml(geojson, options) {
   options = options || {
     documentName: undefined,
@@ -5518,45 +5590,54 @@ function geoJSONToKml(geojson, options) {
   };
   return '<?xml version="1.0" encoding="UTF-8"?>' + tag('kml', tag('Document', documentName(options) + documentDescription(options) + root(geojson, options)), [['xmlns', 'http://www.opengis.net/kml/2.2']]);
 }
+
 function feature(options, styleHashesArray) {
   return function (attr) {
     if (!attr.properties || !geometry.valid(attr.geometry)) return '';
     var geometryString = geometry.any(attr.geometry);
     if (!geometryString) return '';
     var styleDefinition = '',
-      styleReference = '';
+        styleReference = '';
+
     if (options.simplestyle) {
       var styleHash = hashStyle(attr.properties);
+
       if (styleHash) {
         if (geometry.isPoint(attr.geometry) && hasMarkerStyle(attr.properties)) {
           if (styleHashesArray.indexOf(styleHash) === -1) {
             styleDefinition = markerStyle(attr.properties, styleHash);
             styleHashesArray.push(styleHash);
           }
+
           styleReference = tag('styleUrl', '#' + styleHash);
         } else if ((geometry.isPolygon(attr.geometry) || geometry.isLine(attr.geometry)) && hasPolygonAndLineStyle(attr.properties)) {
           if (styleHashesArray.indexOf(styleHash) === -1) {
             styleDefinition = polygonAndLineStyle(attr.properties, styleHash);
             styleHashesArray.push(styleHash);
           }
+
           styleReference = tag('styleUrl', '#' + styleHash);
-        }
-        // Note that style of GeometryCollection / MultiGeometry is not supported
+        } // Note that style of GeometryCollection / MultiGeometry is not supported
+
       }
     }
 
     return styleDefinition + tag('Placemark', geoJSONToKml_name(attr.properties, options) + description(attr.properties, options) + extendeddata(attr.properties) + timestamp(attr.properties, options) + geometryString + styleReference);
   };
 }
+
 function root(attr, options) {
   if (!attr.type) return '';
   var styleHashesArray = [];
+
   switch (attr.type) {
     case 'FeatureCollection':
       if (!attr.features) return '';
       return attr.features.map(feature(options, styleHashesArray)).join('');
+
     case 'Feature':
       return feature(options, styleHashesArray)(attr);
+
     default:
       return feature(options, styleHashesArray)({
         type: 'Feature',
@@ -5565,25 +5646,30 @@ function root(attr, options) {
       });
   }
 }
+
 function documentName(options) {
   return options.documentName !== undefined ? tag('name', options.documentName) : '';
 }
+
 function documentDescription(options) {
   return options.documentDescription !== undefined ? tag('description', options.documentDescription) : '';
 }
+
 function geoJSONToKml_name(attr, options) {
   return attr[options.name] ? tag('name', encode(attr[options.name])) : '';
 }
+
 function description(attr, options) {
   return attr[options.description] ? tag('description', encode(attr[options.description])) : '';
 }
+
 function timestamp(attr, options) {
   return attr[options.timestamp] ? tag('TimeStamp', tag('when', encode(attr[options.timestamp]))) : '';
-}
-
-// ## Geometry Types
+} // ## Geometry Types
 //
 // https://developers.google.com/kml/documentation/kmlreference#geometry
+
+
 var geometry = {
   Point: function Point(attr) {
     return tag('Point', tag('coordinates', attr.coordinates.join(',')));
@@ -5594,11 +5680,11 @@ var geometry = {
   Polygon: function Polygon(attr) {
     if (!attr.coordinates.length) return '';
     var outer = attr.coordinates[0],
-      inner = attr.coordinates.slice(1),
-      outerRing = tag('outerBoundaryIs', tag('LinearRing', tag('coordinates', linearring(outer)))),
-      innerRings = inner.map(function (i) {
-        return tag('innerBoundaryIs', tag('LinearRing', tag('coordinates', linearring(i))));
-      }).join('');
+        inner = attr.coordinates.slice(1),
+        outerRing = tag('outerBoundaryIs', tag('LinearRing', tag('coordinates', linearring(outer)))),
+        innerRings = inner.map(function (i) {
+      return tag('innerBoundaryIs', tag('LinearRing', tag('coordinates', linearring(i))));
+    }).join('');
     return tag('Polygon', outerRing + innerRings);
   },
   MultiPoint: function MultiPoint(attr) {
@@ -5648,39 +5734,45 @@ var geometry = {
     return attr.type === 'LineString' || attr.type === 'MultiLineString';
   }
 };
+
 function linearring(attr) {
   return attr.map(function (cds) {
     return cds.join(',');
   }).join(' ');
-}
+} // ## Data
 
-// ## Data
+
 function extendeddata(attr) {
   var arr = [];
+
   for (var i in attr) {
     var val = attr[i];
+
     if (isObject(val)) {
       arr.push("<Data name =\"".concat(i, "\"><value>").concat(JSON.stringify(val), "</value></Data>"));
     } else {
       arr.push("<Data name =\"".concat(i, "\"><value>").concat(val, "</value></Data>"));
     }
   }
+
   return tag('ExtendedData', arr.join(''));
 }
+
 function data(attr) {
   return tag('Data', tag('value', encode(attr[1])), [['name', encode(attr[0])]]);
-}
+} // ## Marker style
 
-// ## Marker style
+
 function hasMarkerStyle(attr) {
   return !!(attr['marker-size'] || attr['marker-symbol'] || attr['marker-color']);
 }
+
 function markerStyle(attr, styleHash) {
   return tag('Style', tag('IconStyle', tag('Icon', tag('href', iconUrl(attr)))) + iconSize(attr), [['id', styleHash]]);
 }
+
 function iconUrl(attr) {
-  return attr['marker-symbol'];
-  // var size = attr['marker-size'] || 'medium',
+  return attr['marker-symbol']; // var size = attr['marker-size'] || 'medium',
   //   symbol = attr['marker-symbol'] ? '-' + attr['marker-symbol'] : '',
   //   color = (attr['marker-color'] || '7e7e7e').replace('#', '')
   // return 'https://api.tiles.mapbox.com/v3/marker/' + 'pin-' + size.charAt(0) + symbol + '+' + color + '.png'
@@ -5688,9 +5780,9 @@ function iconUrl(attr) {
 
 function iconSize(attr) {
   return tag('hotSpot', '', [['xunits', 'fraction'], ['yunits', 'fraction'], ['x', 0.5], ['y', 0.5]]);
-}
+} // ## Polygon and Line style
 
-// ## Polygon and Line style
+
 function hasPolygonAndLineStyle(attr) {
   for (var key in attr) {
     if ({
@@ -5702,16 +5794,19 @@ function hasPolygonAndLineStyle(attr) {
     }[key]) return true;
   }
 }
+
 function polygonAndLineStyle(attr, styleHash) {
   var lineStyle = tag('LineStyle', [tag('color', hexToKmlColor(attr['stroke'], attr['stroke-opacity']) || 'ff555555') + tag('width', attr['stroke-width'] === undefined ? 2 : attr['stroke-width'])]);
   var polyStyle = '';
+
   if (attr['fill'] || attr['fill-opacity']) {
     polyStyle = tag('PolyStyle', [tag('color', hexToKmlColor(attr['fill'], attr['fill-opacity']) || '88555555')]);
   }
-  return tag('Style', lineStyle + polyStyle, [['id', styleHash]]);
-}
 
-// ## Style helpers
+  return tag('Style', lineStyle + polyStyle, [['id', styleHash]]);
+} // ## Style helpers
+
+
 function hashStyle(attr) {
   var hash = '';
   if (attr['marker-symbol']) hash = hash + 'ms' + attr['marker-symbol'];
@@ -5724,54 +5819,62 @@ function hashStyle(attr) {
   if (attr['fill-opacity']) hash = hash + 'fo' + attr['fill-opacity'].toString().replace('.', '');
   return hash;
 }
+
 function hexToKmlColor(hexColor, opacity) {
   if (typeof hexColor !== 'string') return '';
   hexColor = hexColor.replace('#', '').toLowerCase();
+
   if (hexColor.length === 3) {
     hexColor = hexColor[0] + hexColor[0] + hexColor[1] + hexColor[1] + hexColor[2] + hexColor[2];
   } else if (hexColor.length !== 6) {
     return '';
   }
+
   var r = hexColor[0] + hexColor[1];
   var g = hexColor[2] + hexColor[3];
   var b = hexColor[4] + hexColor[5];
   var o = 'ff';
+
   if (typeof opacity === 'number' && opacity >= 0.0 && opacity <= 1.0) {
     o = (opacity * 255).toString(16);
     if (o.indexOf('.') > -1) o = o.substr(0, o.indexOf('.'));
     if (o.length < 2) o = '0' + o;
   }
+
   return o + b + g + r;
 }
-
 /**
  * 判断对象是否为Object类型
  * @param {*} obj 对象
  * @returns {Boolean} 是否为Object类型
  */
+
+
 function isObject(obj) {
   return Object.prototype.toString.call(obj) === '[object Object]';
 }
-
 /**
  * @param {string} attr a string of attribute
  * @returns {string}
  */
+
 function encode(attr) {
   if (!attr) return '';
   return attr.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
 /**
  * @param {array} attr an array of attributes
  * @returns {string}
  */
+
+
 function attr(attributes) {
   if (!Object.keys(attributes).length) return '';
   return ' ' + Object.keys(attributes).map(function (key) {
     return key + '="' + geoJSONToKml_escape(attributes[key]) + '"';
   }).join(' ');
 }
+
 var escape_map = {
   '>': '&gt;',
   '<': '&lt;',
@@ -5779,6 +5882,7 @@ var escape_map = {
   '"': '&quot;',
   '&': '&amp;'
 };
+
 function geoJSONToKml_escape(string, ignore) {
   var pattern;
   if (string === null || string === undefined) return;
@@ -5788,18 +5892,20 @@ function geoJSONToKml_escape(string, ignore) {
     return escape_map[item];
   });
 }
-
 /**
  * @param {string} el element name
  * @param {string} contents innerXML
  * @param {array} attributes array of pairs
  * @returns {string}
  */
+
+
 function tag(el, attributes, contents) {
   if (Array.isArray(attributes) || typeof attributes === 'string') {
     contents = attributes;
     attributes = {};
   }
+
   if (Array.isArray(contents)) contents = '\n' + contents.map(function (content) {
     return '  ' + content;
   }).join('\n') + '\n';
@@ -5808,9 +5914,8 @@ function tag(el, attributes, contents) {
 // CONCATENATED MODULE: ./src/index.js
 
 
+ //geojson转kml
 
-
-//geojson转kml
 function toKml(geojson, options) {
   if (geojson.features) {
     geojson.features.forEach(function (feature) {
@@ -5819,41 +5924,53 @@ function toKml(geojson, options) {
   } else {
     updateFeatureByStyle(geojson);
   }
+
   return geoJSONToKml(geojson, options);
 }
+
 function updateFeatureByStyle(feature) {
   var _feature$properties;
+
   if (!feature.properties) return;
   var style = feature.properties.style;
+
   if (style) {
     var _feature$geometry, _feature$geometry$coo;
+
     if (style.image) {
       feature.properties['marker-symbol'] = style.image;
       if (style.outlineColor) feature.properties['marker-color'] = style.outlineColor;
       return;
     }
+
     if (style.color) {
       feature.properties['fill'] = style.color;
       if (style.opacity) feature.properties['fill-opacity'] = style.opacity;
     }
+
     if (style.outlineColor) {
       var _style$outlineWidth, _ref, _style$outlineOpacity;
+
       feature.properties['stroke'] = style.outlineColor;
       feature.properties['stroke-width'] = (_style$outlineWidth = style.outlineWidth) !== null && _style$outlineWidth !== void 0 ? _style$outlineWidth : 1;
       feature.properties['stroke-opacity'] = (_ref = (_style$outlineOpacity = style.outlineOpacity) !== null && _style$outlineOpacity !== void 0 ? _style$outlineOpacity : style.opacity) !== null && _ref !== void 0 ? _ref : 1.0;
     }
+
     if (style.html) {
       style.html = HTMLEncode(style.html);
-    }
+    } //闭合线特殊处理
 
-    //闭合线特殊处理
+
     if (style.closure && ((_feature$geometry = feature.geometry) === null || _feature$geometry === void 0 ? void 0 : (_feature$geometry$coo = _feature$geometry.coordinates) === null || _feature$geometry$coo === void 0 ? void 0 : _feature$geometry$coo.length) > 0) {
       feature.geometry.coordinates.push(feature.geometry.coordinates[0]);
     }
   }
+
   var type = feature === null || feature === void 0 ? void 0 : (_feature$properties = feature.properties) === null || _feature$properties === void 0 ? void 0 : _feature$properties.type;
+
   if (type == 'polygon') {
     var arr = feature.geometry.coordinates[0];
+
     if ((arr === null || arr === void 0 ? void 0 : arr.length) > 2) {
       arr.push(arr[0]);
     }
@@ -5869,12 +5986,15 @@ function updateFeatureByStyle(feature) {
     };
   }
 }
+
 var getDom = function getDom(xml) {
-  return new DOMParser().parseFromString(xml, 'text/xml');
+  return new DOMParser().parseFromString(xml, 'application/xml');
 };
+
 var getExtension = function getExtension(fileName) {
   return fileName.split('.').pop();
 };
+
 var src_getKmlDom = function getKmlDom(kmzFile) {
   var zip = new jszip_min();
   return zip.loadAsync(kmzFile).then(function (zip) {
@@ -5886,19 +6006,21 @@ var src_getKmlDom = function getKmlDom(kmzFile) {
     });
     return kmlDom || Promise.reject('No kml file found');
   });
-};
+}; //kml转geojson
 
-//kml转geojson
+
 function toGeoJSON(doc) {
   if (!doc) return Promise.reject('参数不能为空');
+
   if (isString(doc)) {
     var extension = getExtension(doc);
-    if (extension === 'kml' && window.Cesium) {
-      return Cesium.Resource.fetchXML(doc).then(function (kmlDom) {
+
+    if (extension === 'kml') {
+      return fetchXML(doc).then(function (kmlDom) {
         return Object(kmlToGeoJSON["a" /* kmlToGeoJSON */])(kmlDom);
       });
-    } else if (extension === 'kmz' && window.Cesium) {
-      return Cesium.Resource.fetchBlob(doc).then(function (xml) {
+    } else if (extension === 'kmz') {
+      return fetchBlob(doc).then(function (xml) {
         return src_getKmlDom(xml);
       }).then(function (kmlDom) {
         return Object(kmlToGeoJSON["a" /* kmlToGeoJSON */])(kmlDom);
@@ -5911,6 +6033,7 @@ function toGeoJSON(doc) {
   } else if (doc.getRootNode) {
     //直接传docmect文档
     var _geojson = Object(kmlToGeoJSON["a" /* kmlToGeoJSON */])(doc);
+
     return Promise.resolve(_geojson);
   } else {
     //直接传blob
@@ -5919,14 +6042,39 @@ function toGeoJSON(doc) {
     });
   }
 }
+
 function isString(str) {
   return typeof str == 'string' && str.constructor == String;
 }
+
 function HTMLEncode(html) {
   var temp = document.createElement('div');
   temp.textContent != null ? temp.textContent = html : temp.innerText = html;
   var output = temp.innerHTML;
   return output;
+}
+
+function fetchXML(url) {
+  var requestOptions = {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/xml'
+    }
+  };
+  return fetch(url, requestOptions).then(function (response) {
+    return response.text();
+  }).then(function (doc) {
+    return getDom(doc);
+  });
+}
+
+function fetchBlob(url) {
+  var requestOptions = {
+    method: 'GET'
+  };
+  return fetch(url, requestOptions).then(function (response) {
+    return response.blob(); // 获取返回结果并转化为Blob对象
+  });
 }
 
 /***/ })
