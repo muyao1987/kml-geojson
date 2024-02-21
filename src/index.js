@@ -93,12 +93,12 @@ export function toGeoJSON(doc) {
 
   if (isString(doc)) {
     let extension = getExtension(doc)
-    if (extension === 'kml' && window.Cesium) {
-      return Cesium.Resource.fetchXML(doc).then(function (kmlDom) {
+    if (extension === 'kml') {
+      return fetchXML(doc).then(function (kmlDom) {
         return kmlToGeoJSON(kmlDom)
       })
-    } else if (extension === 'kmz' && window.Cesium) {
-      return Cesium.Resource.fetchBlob(doc)
+    } else if (extension === 'kmz') {
+      return fetchBlob(doc)
         .then(function (xml) {
           return getKmlDom(xml)
         })
@@ -131,4 +131,23 @@ function HTMLEncode(html) {
   temp.textContent != null ? (temp.textContent = html) : (temp.innerText = html)
   var output = temp.innerHTML
   return output
+}
+
+function fetchXML(url) {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/xml' },
+  }
+  return fetch(url, requestOptions).then((response) => {
+    return getDom(response.text())
+  })
+}
+
+function fetchBlob(url) {
+  const requestOptions = {
+    method: 'GET',
+  }
+  return fetch(url, requestOptions).then((response) => {
+    return response.blob() // 获取返回结果并转化为Blob对象
+  })
 }
