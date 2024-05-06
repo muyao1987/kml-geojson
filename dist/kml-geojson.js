@@ -1,7 +1,7 @@
 /*!
  * kml与geojson互转工具类
  * 版本信息：v1.3.0, hash值: 29a189d4d811cb40d790
- * 编译日期：2024-05-06 12:32:05
+ * 编译日期：2024-05-06 12:33:00
  * 版权所有：Copyright by 木遥 https://github.com/muyao1987/kml-geojson
  * 
  */
