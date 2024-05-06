@@ -88,17 +88,17 @@ let getKmlDom = (kmzFile) => {
 }
 
 //kml转geojson
-export function toGeoJSON(doc) {
+export function toGeoJSON(doc,options) {
   if (!doc) return Promise.reject('参数不能为空')
 
   if (isString(doc)) {
     let extension = getExtension(doc)
     if (extension === 'kml') {
-      return fetchXML(doc).then(function (kmlDom) {
+      return fetchXML(doc,options).then(function (kmlDom) {
         return kmlToGeoJSON(kmlDom)
       })
     } else if (extension === 'kmz') {
-      return fetchBlob(doc)
+      return fetchBlob(doc,options)
         .then(function (xml) {
           return getKmlDom(xml)
         })
@@ -133,21 +133,25 @@ function HTMLEncode(html) {
   return output
 }
 
-function fetchXML(url) {
+function fetchXML(url,options) {
   const requestOptions = {
     method: 'GET',
     headers: { 'Content-Type': 'application/xml' },
+    ...options
   }
-  return fetch(url, requestOptions).then((response) => {
-    return response.text()
-  }).then((doc) => {
-    return getDom(doc)
-  })
+  return fetch(url, requestOptions)
+    .then((response) => {
+      return response.text()
+    })
+    .then((doc) => {
+      return getDom(doc)
+    })
 }
 
-function fetchBlob(url) {
+function fetchBlob(url,options) {
   const requestOptions = {
     method: 'GET',
+    ...options
   }
   return fetch(url, requestOptions).then((response) => {
     return response.blob() // 获取返回结果并转化为Blob对象
