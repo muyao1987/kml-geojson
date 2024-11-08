@@ -1,7 +1,7 @@
 /*!
  * kml与geojson互转工具类
- * 版本信息：v1.3.0, hash值: 69fa1ca45d00dd692bcd
- * 编译日期：2024-05-06 12:33:08
+ * 版本信息：v1.3.0, hash值: 4351e1af60e30f7dc4dd
+ * 编译日期：2024-11-08 15:51:06
  * 版权所有：Copyright by 木遥 https://github.com/muyao1987/kml-geojson
  * 
  */
@@ -462,14 +462,14 @@ function kmlToGeoJSON(doc) {
 /* 1 */
 /***/ (function(module, exports) {
 
-function _typeof(obj) {
+function _typeof(o) {
   "@babel/helpers - typeof";
 
-  return (module.exports = _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
-    return typeof obj;
-  } : function (obj) {
-    return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-  }, module.exports.__esModule = true, module.exports["default"] = module.exports), _typeof(obj);
+  return module.exports = _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) {
+    return typeof o;
+  } : function (o) {
+    return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+  }, module.exports.__esModule = true, module.exports["default"] = module.exports, _typeof(o);
 }
 module.exports = _typeof, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
@@ -1983,19 +1983,13 @@ try{
 /***/ (function(module, exports, __webpack_require__) {
 
 var toPropertyKey = __webpack_require__(7);
-function _defineProperty(obj, key, value) {
-  key = toPropertyKey(key);
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-  return obj;
+function _defineProperty(e, r, t) {
+  return (r = toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+    value: t,
+    enumerable: !0,
+    configurable: !0,
+    writable: !0
+  }) : e[r] = t, e;
 }
 module.exports = _defineProperty, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
@@ -2024,28 +2018,28 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 var _typeof = __webpack_require__(1)["default"];
 var toPrimitive = __webpack_require__(8);
-function _toPropertyKey(arg) {
-  var key = toPrimitive(arg, "string");
-  return _typeof(key) === "symbol" ? key : String(key);
+function toPropertyKey(t) {
+  var i = toPrimitive(t, "string");
+  return "symbol" == _typeof(i) ? i : i + "";
 }
-module.exports = _toPropertyKey, module.exports.__esModule = true, module.exports["default"] = module.exports;
+module.exports = toPropertyKey, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ }),
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var _typeof = __webpack_require__(1)["default"];
-function _toPrimitive(input, hint) {
-  if (_typeof(input) !== "object" || input === null) return input;
-  var prim = input[Symbol.toPrimitive];
-  if (prim !== undefined) {
-    var res = prim.call(input, hint || "default");
-    if (_typeof(res) !== "object") return res;
+function toPrimitive(t, r) {
+  if ("object" != _typeof(t) || !t) return t;
+  var e = t[Symbol.toPrimitive];
+  if (void 0 !== e) {
+    var i = e.call(t, r || "default");
+    if ("object" != _typeof(i)) return i;
     throw new TypeError("@@toPrimitive must return a primitive value.");
   }
-  return (hint === "string" ? String : Number)(input);
+  return ("string" === r ? String : Number)(t);
 }
-module.exports = _toPrimitive, module.exports.__esModule = true, module.exports["default"] = module.exports;
+module.exports = toPrimitive, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ }),
 /* 9 */
@@ -5598,7 +5592,6 @@ function feature(options, styleHashesArray) {
         // Note that style of GeometryCollection / MultiGeometry is not supported
       }
     }
-
     return styleDefinition + tag('Placemark', geoJSONToKml_name(attr.properties, options) + description(attr.properties, options) + extendeddata(attr.properties) + timestamp(attr.properties, options) + geometryString + styleReference);
   };
 }
@@ -5739,7 +5732,6 @@ function iconUrl(attr) {
   //   color = (attr['marker-color'] || '7e7e7e').replace('#', '')
   // return 'https://api.tiles.mapbox.com/v3/marker/' + 'pin-' + size.charAt(0) + symbol + '+' + color + '.png'
 }
-
 function iconSize(attr) {
   return tag('hotSpot', '', [['xunits', 'fraction'], ['yunits', 'fraction'], ['x', 0.5], ['y', 0.5]]);
 }
@@ -5861,8 +5853,8 @@ function tag(el, attributes, contents) {
 }
 // CONCATENATED MODULE: ./src/index.js
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { defineProperty_default()(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { defineProperty_default()(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 
 
 
@@ -5883,7 +5875,7 @@ function updateFeatureByStyle(feature) {
   if (!feature.properties) return;
   var style = feature.properties.style;
   if (style) {
-    var _feature$geometry, _feature$geometry$coo;
+    var _feature$geometry;
     if (style.image) {
       feature.properties['marker-symbol'] = style.image;
       if (style.outlineColor) feature.properties['marker-color'] = style.outlineColor;
@@ -5904,11 +5896,11 @@ function updateFeatureByStyle(feature) {
     }
 
     //闭合线特殊处理
-    if (style.closure && ((_feature$geometry = feature.geometry) === null || _feature$geometry === void 0 ? void 0 : (_feature$geometry$coo = _feature$geometry.coordinates) === null || _feature$geometry$coo === void 0 ? void 0 : _feature$geometry$coo.length) > 0) {
+    if (style.closure && ((_feature$geometry = feature.geometry) === null || _feature$geometry === void 0 || (_feature$geometry = _feature$geometry.coordinates) === null || _feature$geometry === void 0 ? void 0 : _feature$geometry.length) > 0) {
       feature.geometry.coordinates.push(feature.geometry.coordinates[0]);
     }
   }
-  var type = feature === null || feature === void 0 ? void 0 : (_feature$properties = feature.properties) === null || _feature$properties === void 0 ? void 0 : _feature$properties.type;
+  var type = feature === null || feature === void 0 || (_feature$properties = feature.properties) === null || _feature$properties === void 0 ? void 0 : _feature$properties.type;
   if (type == 'polygon') {
     var arr = feature.geometry.coordinates[0];
     if ((arr === null || arr === void 0 ? void 0 : arr.length) > 2) {
