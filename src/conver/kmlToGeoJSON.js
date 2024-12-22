@@ -1,14 +1,19 @@
 // kml  =>  geojson
 
-var removeSpace = /\s*/g,
-  trimSpace = /^\s*|\s*$/g,
-  splitSpace = /\s+/
+const removeSpace = /\s*/g
+const trimSpace = /^\s*|\s*$/g
+const splitSpace = /\s+/
+
 // generate a short, numeric hash of a string
 function okhash(x) {
-  if (!x || !x.length) return 0
+  if (!x || !x.length) {
+    return 0
+  }
+  // eslint-disable-next-line no-var
   for (var i = 0, h = 0; i < x.length; i++) {
     h = ((h << 5) - h + x.charCodeAt(i)) | 0
   }
+  // eslint-disable-next-line block-scoped-var
   return h
 }
 // all Y children of X
@@ -23,7 +28,7 @@ function attrf(x, y) {
 }
 // one Y child of X, if any, otherwise null
 function get1(x, y) {
-  var n = get(x, y)
+  const n = get(x, y)
   return n.length ? n[0] : null
 }
 // https://developer.mozilla.org/en-US/docs/Web/API/Node.normalize
@@ -35,9 +40,11 @@ function norm(el) {
 }
 // cast array x into numbers
 function numarray(x) {
+  // eslint-disable-next-line no-var
   for (var j = 0, o = []; j < x.length; j++) {
     o[j] = parseFloat(x[j])
   }
+  // eslint-disable-next-line block-scoped-var
   return o
 }
 // get the content of a text node, if any
@@ -45,12 +52,12 @@ function nodeVal(x) {
   if (x) {
     norm(x)
   }
-  return (x && x.textContent) || ''
+  return (x && x.textContent) || ""
 }
 
 // get the contents of multiple text nodes, if present
 // function getMulti(x, ys) {
-//   var o = {},
+//   let o = {},
 //     n,
 //     k
 //   for (k = 0; k < ys.length; k++) {
@@ -62,23 +69,23 @@ function nodeVal(x) {
 
 // add properties of Y to X, overwriting if present in both
 // function extend(x, y) {
-//   for (var k in y) x[k] = y[k]
+//   for (let k in y) x[k] = y[k]
 // }
 // get one coordinate from a coordinate array, if any
 function coord1(v) {
-  return numarray(v.replace(removeSpace, '').split(','))
+  return numarray(v.replace(removeSpace, "").split(","))
 }
 // get all coordinates from a coordinate array as [[],[]]
 function coord(v) {
-  var coords = v.replace(trimSpace, '').split(splitSpace),
-    o = []
-  for (var i = 0; i < coords.length; i++) {
+  const coords = v.replace(trimSpace, "").split(splitSpace)
+  const o = []
+  for (let i = 0; i < coords.length; i++) {
     o.push(coord1(coords[i]))
   }
   return o
 }
 // function coordPair(x) {
-//   var ll = [attrf(x, 'lon'), attrf(x, 'lat')],
+//   let ll = [attrf(x, 'lon'), attrf(x, 'lat')],
 //     ele = get1(x, 'ele'),
 //     // handle namespaced attribute in browser
 //     heartRate = get1(x, 'gpxtpx:hr') || get1(x, 'hr'),
@@ -100,64 +107,65 @@ function coord(v) {
 // create a new feature collection parent object
 function fc() {
   return {
-    type: 'FeatureCollection',
-    features: [],
+    type: "FeatureCollection",
+    features: []
   }
 }
 
-var serializer
-if (typeof XMLSerializer !== 'undefined') {
+let serializer
+if (typeof XMLSerializer !== "undefined") {
   /* istanbul ignore next */
   serializer = new XMLSerializer()
   // only require xmldom in a node environment
-} else if (typeof exports === 'object' && typeof process === 'object' && !process.browser) {
-  serializer = new (require('xmldom').XMLSerializer)()
+} else if (typeof exports === "object" && typeof process === "object" && !process.browser) {
+  serializer = new (require("xmldom").XMLSerializer)()
 }
 function xml2str(str) {
   // IE9 will create a new XMLSerializer but it'll crash immediately.
   // This line is ignored because we don't run coverage tests in IE9
   /* istanbul ignore next */
-  if (str.xml !== undefined) return str.xml
+  if (str.xml !== undefined) {
+    return str.xml
+  }
   return serializer.serializeToString(str)
 }
 
-
 export function kmlToGeoJSON(doc) {
-  var gj = fc(),
-    // styleindex keeps track of hashed styles in order to match features
-    styleIndex = {},
-    styleByHash = {},
-    // stylemapindex keeps track of style maps to expose in properties
-    styleMapIndex = {},
-    // atomic geospatial types supported by KML - MultiGeometry is
-    // handled separately
-    geotypes = ['Polygon', 'LineString', 'Point', 'Track', 'gx:Track'],
-    // all root placemarks in the file
-    placemarks = get(doc, 'Placemark'),
-    styles = get(doc, 'Style'),
-    styleMaps = get(doc, 'StyleMap')
+  const gj = fc()
+  // styleindex keeps track of hashed styles in order to match features
+  const styleIndex = {}
+  const styleByHash = {}
+  // stylemapindex keeps track of style maps to expose in properties
+  const styleMapIndex = {}
+  // atomic geospatial types supported by KML - MultiGeometry is
+  // handled separately
+  const geotypes = ["Polygon", "LineString", "Point", "Track", "gx:Track"]
+  // all root placemarks in the file
+  const placemarks = get(doc, "Placemark")
+  const styles = get(doc, "Style")
+  const styleMaps = get(doc, "StyleMap")
 
-  for (var k = 0; k < styles.length; k++) {
-    var hash = okhash(xml2str(styles[k])).toString(16)
-    styleIndex['#' + attr(styles[k], 'id')] = hash
+  for (let k = 0; k < styles.length; k++) {
+    const hash = okhash(xml2str(styles[k])).toString(16)
+    styleIndex["#" + attr(styles[k], "id")] = hash
     styleByHash[hash] = styles[k]
   }
-  for (var l = 0; l < styleMaps.length; l++) {
-    styleIndex['#' + attr(styleMaps[l], 'id')] = okhash(xml2str(styleMaps[l])).toString(16)
-    var pairs = get(styleMaps[l], 'Pair')
-    var pairsMap = {}
-    for (var m = 0; m < pairs.length; m++) {
-      pairsMap[nodeVal(get1(pairs[m], 'key'))] = nodeVal(get1(pairs[m], 'styleUrl'))
+  for (let l = 0; l < styleMaps.length; l++) {
+    styleIndex["#" + attr(styleMaps[l], "id")] = okhash(xml2str(styleMaps[l])).toString(16)
+    const pairs = get(styleMaps[l], "Pair")
+    const pairsMap = {}
+    for (let m = 0; m < pairs.length; m++) {
+      pairsMap[nodeVal(get1(pairs[m], "key"))] = nodeVal(get1(pairs[m], "styleUrl"))
     }
-    styleMapIndex['#' + attr(styleMaps[l], 'id')] = pairsMap
+    styleMapIndex["#" + attr(styleMaps[l], "id")] = pairsMap
   }
-  for (var j = 0; j < placemarks.length; j++) {
+  for (let j = 0; j < placemarks.length; j++) {
     gj.features = gj.features.concat(getPlacemark(placemarks[j]))
   }
   function kmlColor(v) {
-    var color, opacity
-    v = v || ''
-    if (v.substr(0, 1) === '#') {
+    let color, opacity
+    v = v || ""
+    if (v.substr(0, 1) === "#") {
       v = v.substr(1)
     }
     if (v.length === 6 || v.length === 3) {
@@ -165,103 +173,115 @@ export function kmlToGeoJSON(doc) {
     }
     if (v.length === 8) {
       opacity = parseInt(v.substr(0, 2), 16) / 255
-      color = '#' + v.substr(6, 2) + v.substr(4, 2) + v.substr(2, 2)
+      color = "#" + v.substr(6, 2) + v.substr(4, 2) + v.substr(2, 2)
     }
     return [color, isNaN(opacity) ? undefined : opacity]
   }
   function gxCoord(v) {
-    return numarray(v.split(' '))
+    return numarray(v.split(" "))
   }
   function gxCoords(root) {
-    var elems = get(root, 'coord', 'gx'),
-      coords = [],
-      times = []
-    if (elems.length === 0) elems = get(root, 'gx:coord')
-    for (var i = 0; i < elems.length; i++) coords.push(gxCoord(nodeVal(elems[i])))
-    var timeElems = get(root, 'when')
-    for (var j = 0; j < timeElems.length; j++) times.push(nodeVal(timeElems[j]))
+    let elems = get(root, "coord", "gx")
+    const coords = []
+    const times = []
+    if (elems.length === 0) {
+      elems = get(root, "gx:coord")
+    }
+    for (let i = 0; i < elems.length; i++) {
+      coords.push(gxCoord(nodeVal(elems[i])))
+    }
+    const timeElems = get(root, "when")
+    for (let j = 0; j < timeElems.length; j++) {
+      times.push(nodeVal(timeElems[j]))
+    }
     return {
       coords: coords,
-      times: times,
+      times: times
     }
   }
   function getGeometry(root) {
-    var geomNode,
-      geomNodes,
-      i,
-      j,
-      k,
-      geoms = [],
-      coordTimes = []
-    if (get1(root, 'MultiGeometry')) {
-      return getGeometry(get1(root, 'MultiGeometry'))
+    let geomNode
+    let geomNodes
+    let i
+    let j
+    let k
+    const geoms = []
+    const coordTimes = []
+    if (get1(root, "MultiGeometry")) {
+      return getGeometry(get1(root, "MultiGeometry"))
     }
-    if (get1(root, 'MultiTrack')) {
-      return getGeometry(get1(root, 'MultiTrack'))
+    if (get1(root, "MultiTrack")) {
+      return getGeometry(get1(root, "MultiTrack"))
     }
-    if (get1(root, 'gx:MultiTrack')) {
-      return getGeometry(get1(root, 'gx:MultiTrack'))
+    if (get1(root, "gx:MultiTrack")) {
+      return getGeometry(get1(root, "gx:MultiTrack"))
     }
     for (i = 0; i < geotypes.length; i++) {
       geomNodes = get(root, geotypes[i])
       if (geomNodes) {
         for (j = 0; j < geomNodes.length; j++) {
           geomNode = geomNodes[j]
-          if (geotypes[i] === 'Point') {
+          if (geotypes[i] === "Point") {
             geoms.push({
-              type: 'Point',
-              coordinates: coord1(nodeVal(get1(geomNode, 'coordinates'))),
+              type: "Point",
+              coordinates: coord1(nodeVal(get1(geomNode, "coordinates")))
             })
-          } else if (geotypes[i] === 'LineString') {
+          } else if (geotypes[i] === "LineString") {
             geoms.push({
-              type: 'LineString',
-              coordinates: coord(nodeVal(get1(geomNode, 'coordinates'))),
+              type: "LineString",
+              coordinates: coord(nodeVal(get1(geomNode, "coordinates")))
             })
-          } else if (geotypes[i] === 'Polygon') {
-            var rings = get(geomNode, 'LinearRing'),
-              coords = []
+          } else if (geotypes[i] === "Polygon") {
+            const rings = get(geomNode, "LinearRing")
+            const coords = []
             for (k = 0; k < rings.length; k++) {
-              coords.push(coord(nodeVal(get1(rings[k], 'coordinates'))))
+              coords.push(coord(nodeVal(get1(rings[k], "coordinates"))))
             }
             geoms.push({
-              type: 'Polygon',
-              coordinates: coords,
+              type: "Polygon",
+              coordinates: coords
             })
-          } else if (geotypes[i] === 'Track' || geotypes[i] === 'gx:Track') {
-            var track = gxCoords(geomNode)
+          } else if (geotypes[i] === "Track" || geotypes[i] === "gx:Track") {
+            const track = gxCoords(geomNode)
             geoms.push({
-              type: 'LineString',
-              coordinates: track.coords,
+              type: "LineString",
+              coordinates: track.coords
             })
-            if (track.times.length) coordTimes.push(track.times)
+            if (track.times.length) {
+              coordTimes.push(track.times)
+            }
           }
         }
       }
     }
     return {
       geoms: geoms,
-      coordTimes: coordTimes,
+      coordTimes: coordTimes
     }
   }
   function getPlacemark(root) {
-    var geomsAndTimes = getGeometry(root),
-      i,
-      properties = {},
-      name = nodeVal(get1(root, 'name')),
-      styleUrl = nodeVal(get1(root, 'styleUrl')),
-      description = nodeVal(get1(root, 'description')),
-      timeSpan = get1(root, 'TimeSpan'),
-      timeStamp = get1(root, 'TimeStamp'),
-      extendedData = get1(root, 'ExtendedData'),
-      lineStyle = get1(root, 'LineStyle'),
-      polyStyle = get1(root, 'PolyStyle'),
-      visibility = get1(root, 'visibility')
+    const geomsAndTimes = getGeometry(root)
+    let i
+    const properties = {}
+    const name = nodeVal(get1(root, "name"))
+    let styleUrl = nodeVal(get1(root, "styleUrl"))
+    const description = nodeVal(get1(root, "description"))
+    const timeSpan = get1(root, "TimeSpan")
+    const timeStamp = get1(root, "TimeStamp")
+    const extendedData = get1(root, "ExtendedData")
+    let lineStyle = get1(root, "LineStyle")
+    let polyStyle = get1(root, "PolyStyle")
+    const visibility = get1(root, "visibility")
 
-    if (!geomsAndTimes.geoms.length) return []
-    if (name) properties.name = name
+    if (!geomsAndTimes.geoms.length) {
+      return []
+    }
+    if (name) {
+      properties.name = name
+    }
     if (styleUrl) {
-      if (styleUrl[0] !== '#') {
-        styleUrl = '#' + styleUrl
+      if (styleUrl[0] !== "#") {
+        styleUrl = "#" + styleUrl
       }
 
       properties.styleUrl = styleUrl
@@ -273,59 +293,79 @@ export function kmlToGeoJSON(doc) {
         properties.styleHash = styleIndex[styleMapIndex[styleUrl].normal]
       }
       // Try to populate the lineStyle or polyStyle since we got the style hash
-      var style = styleByHash[properties.styleHash]
+      const style = styleByHash[properties.styleHash]
       if (style) {
-        if (!lineStyle) lineStyle = get1(style, 'LineStyle')
-        if (!polyStyle) polyStyle = get1(style, 'PolyStyle')
+        if (!lineStyle) {
+          lineStyle = get1(style, "LineStyle")
+        }
+        if (!polyStyle) {
+          polyStyle = get1(style, "PolyStyle")
+        }
       }
     }
-    if (description) properties.description = description
+    if (description) {
+      properties.description = description
+    }
     if (timeSpan) {
-      var begin = nodeVal(get1(timeSpan, 'begin'))
-      var end = nodeVal(get1(timeSpan, 'end'))
+      const begin = nodeVal(get1(timeSpan, "begin"))
+      const end = nodeVal(get1(timeSpan, "end"))
       properties.timespan = { begin: begin, end: end }
     }
     if (timeStamp) {
-      properties.timestamp = nodeVal(get1(timeStamp, 'when'))
+      properties.timestamp = nodeVal(get1(timeStamp, "when"))
     }
     if (lineStyle) {
-      var linestyles = kmlColor(nodeVal(get1(lineStyle, 'color'))),
-        color = linestyles[0],
-        opacity = linestyles[1],
-        width = parseFloat(nodeVal(get1(lineStyle, 'width')))
-      if (color) properties.stroke = color
-      if (!isNaN(opacity)) properties['stroke-opacity'] = opacity
-      if (!isNaN(width)) properties['stroke-width'] = width
+      const linestyles = kmlColor(nodeVal(get1(lineStyle, "color")))
+      const color = linestyles[0]
+      const opacity = linestyles[1]
+      const width = parseFloat(nodeVal(get1(lineStyle, "width")))
+      if (color) {
+        properties.stroke = color
+      }
+      if (!isNaN(opacity)) {
+        properties["stroke-opacity"] = opacity
+      }
+      if (!isNaN(width)) {
+        properties["stroke-width"] = width
+      }
     }
     if (polyStyle) {
-      var polystyles = kmlColor(nodeVal(get1(polyStyle, 'color'))),
-        pcolor = polystyles[0],
-        popacity = polystyles[1],
-        fill = nodeVal(get1(polyStyle, 'fill')),
-        outline = nodeVal(get1(polyStyle, 'outline'))
-      if (pcolor) properties.fill = pcolor
-      if (!isNaN(popacity)) properties['fill-opacity'] = popacity
-      if (fill) properties['fill-opacity'] = fill === '1' ? properties['fill-opacity'] || 1 : 0
-      if (outline) properties['stroke-opacity'] = outline === '1' ? properties['stroke-opacity'] || 1 : 0
+      const polystyles = kmlColor(nodeVal(get1(polyStyle, "color")))
+      const pcolor = polystyles[0]
+      const popacity = polystyles[1]
+      const fill = nodeVal(get1(polyStyle, "fill"))
+      const outline = nodeVal(get1(polyStyle, "outline"))
+      if (pcolor) {
+        properties.fill = pcolor
+      }
+      if (!isNaN(popacity)) {
+        properties["fill-opacity"] = popacity
+      }
+      if (fill) {
+        properties["fill-opacity"] = fill === "1" ? properties["fill-opacity"] || 1 : 0
+      }
+      if (outline) {
+        properties["stroke-opacity"] = outline === "1" ? properties["stroke-opacity"] || 1 : 0
+      }
     }
     if (extendedData) {
-      var datas = get(extendedData, 'Data'),
-        simpleDatas = get(extendedData, 'SimpleData')
+      const datas = get(extendedData, "Data")
+      const simpleDatas = get(extendedData, "SimpleData")
 
       for (i = 0; i < datas.length; i++) {
-        let name = datas[i].getAttribute('name')
-        let val =  nodeVal(get1(datas[i], 'value'))
-        try{
+        const name = datas[i].getAttribute("name")
+        let val = nodeVal(get1(datas[i], "value"))
+        try {
           val = JSON.parse(val)
-        }catch(e){}
-        properties[name] =val
+        } catch (e) {}
+        properties[name] = val
       }
       for (i = 0; i < simpleDatas.length; i++) {
-        let name =simpleDatas[i].getAttribute('name')
+        const name = simpleDatas[i].getAttribute("name")
         let val = nodeVal(simpleDatas[i])
-        try{
+        try {
           val = JSON.parse(val)
-        }catch(e){}
+        } catch (e) {}
         properties[name] = val
       }
     }
@@ -335,18 +375,20 @@ export function kmlToGeoJSON(doc) {
     if (geomsAndTimes.coordTimes.length) {
       properties.coordTimes = geomsAndTimes.coordTimes.length === 1 ? geomsAndTimes.coordTimes[0] : geomsAndTimes.coordTimes
     }
-    var feature = {
-      type: 'Feature',
+    const feature = {
+      type: "Feature",
       geometry:
         geomsAndTimes.geoms.length === 1
           ? geomsAndTimes.geoms[0]
           : {
-              type: 'GeometryCollection',
-              geometries: geomsAndTimes.geoms,
+              type: "GeometryCollection",
+              geometries: geomsAndTimes.geoms
             },
-      properties: properties,
+      properties: properties
     }
-    if (attr(root, 'id')) feature.id = attr(root, 'id')
+    if (attr(root, "id")) {
+      feature.id = attr(root, "id")
+    }
     return [feature]
   }
   return gj

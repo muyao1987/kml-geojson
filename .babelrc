@@ -1,14 +1,14 @@
 {
   "presets": [
     [
-      "@babel/preset-env",
+      "@babel/env",
       {
         "modules": false,
         "targets": {
-          "browsers": ["last 2 versions", "chrome >= 80", "ie >= 11"]
+          "chrome": "80",
+          "node": "14"
         }
       }
     ]
-  ],
-  "plugins": ["@babel/plugin-transform-runtime", "@babel/plugin-proposal-class-properties"]
+  ]
 }
