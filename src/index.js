@@ -4,6 +4,9 @@ import { geoJSONToKml } from "./conver/geoJSONToKml"
 
 // geojson转kml
 export function toKml(geojson, options) {
+  if (Array.isArray(geojson)) {
+    geojson = { type: "FeatureCollection", features: geojson }
+  }
   if (geojson.features) {
     geojson.features.forEach((feature) => {
       updateFeatureByStyle(feature)

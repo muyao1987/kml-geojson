@@ -1,6 +1,6 @@
 /**
  * kml与geojson互转工具类
- * 编译日期：2024-12-22 22:26
+ * 编译日期：2025-01-22 21:52
  * 版权所有：Copyright by 木遥
  */
 (function (global, factory) {
@@ -854,6 +854,9 @@
 
 	// geojson转kml
 	function toKml(geojson, options) {
+	  if (Array.isArray(geojson)) {
+	    geojson = { type: "FeatureCollection", features: geojson };
+	  }
 	  if (geojson.features) {
 	    geojson.features.forEach((feature) => {
 	      updateFeatureByStyle(feature);
