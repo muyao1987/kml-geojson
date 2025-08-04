@@ -1,6 +1,6 @@
 /**
  * kml与geojson互转工具类
- * 编译日期：2025-08-04 15:26
+ * 编译日期：2025-08-04 16:08
  * 版权所有：Copyright by 木遥
  */
 (function (global, factory) {
@@ -1005,7 +1005,6 @@
 	function fetchXML(url, options) {
 	  const requestOptions = {
 	    method: "GET",
-	    headers: { "Content-Type": "application/xml" },
 	    ...options
 	  };
 	  return fetch(url, requestOptions)

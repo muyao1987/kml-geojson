@@ -155,7 +155,7 @@ function HTMLEncode(html) {
 function fetchXML(url, options) {
   const requestOptions = {
     method: "GET",
-    headers: { "Content-Type": "application/xml" },
+    // headers: { "Content-Type": "application/xml" },
     ...options
   }
   return fetch(url, requestOptions)
