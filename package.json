@@ -1,6 +1,6 @@
 {
   "name": "kml-geojson",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "kml与geojson互转工具类",
   "main": "src/index.js",
   "exports": {

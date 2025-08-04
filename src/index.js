@@ -60,24 +60,31 @@ function updateFeatureByStyle(feature) {
     }
   } else if (type === "rectangle") {
     const coors = feature.geometry.coordinates
-    const xmin = coors[0][0]
-    const xmax = coors[1][0]
-    const ymin = coors[0][1]
-    const ymax = coors[1][1]
+    if (coors?.length === 2) {
+      const xmin = coors[0][0]
+      if (isNumber(xmin)) {
+        const xmax = coors[1][0]
+        const ymin = coors[0][1]
+        const ymax = coors[1][1]
 
-    feature.geometry = {
-      type: "Polygon",
-      coordinates: [
-        [
-          [xmin, ymax],
-          [xmin, ymin],
-          [xmax, ymin],
-          [xmax, ymax],
-          [xmin, ymax]
-        ]
-      ]
+        feature.geometry = {
+          type: "Polygon",
+          coordinates: [
+            [
+              [xmin, ymax],
+              [xmin, ymin],
+              [xmax, ymin],
+              [xmax, ymax],
+              [xmin, ymax]
+            ]
+          ]
+        }
+      }
     }
   }
+}
+function isNumber(obj) {
+  return typeof obj === "number" && obj.constructor === Number
 }
 
 const getDom = (xml) => new DOMParser().parseFromString(xml, "application/xml")
