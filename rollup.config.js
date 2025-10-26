@@ -1,14 +1,11 @@
 import { nodeResolve } from "@rollup/plugin-node-resolve"
 import terser from "@rollup/plugin-terser"
 import commonjs from "@rollup/plugin-commonjs"
+import { babel } from "@rollup/plugin-babel"
 
 export default [
   {
     input: "./src/index.js",
-    plugins: [
-      commonjs(), // 加载非esm资源
-      nodeResolve({ browser: true })
-    ],
     output: [
       {
         name: "kgUtil",
@@ -23,6 +20,11 @@ export default [
         banner: renderBanner(),
         plugins: [terser()]
       }
+    ],
+    plugins: [
+      // babel({ babelHelpers: "bundled" }), //低版本浏览器按需开启
+      commonjs(), // 加载非esm资源
+      nodeResolve({ browser: true })
     ]
   }
 ]
