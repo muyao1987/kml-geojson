@@ -130,6 +130,19 @@ function xml2str(str) {
   return serializer.serializeToString(str)
 }
 
+/**
+ * KML 转 GeoJSON。
+ * 入参为已解析好的 KML XML DOM 文档对象（浏览器端为 DOMParser 的解析结果，node 端可用 xmldom 解析后传入）。
+ * 注意：本方法不直接支持 url、kml 字符串、Blob/File 等输入，此类输入请使用 index.js 中导出的 toGeoJSON。
+ *
+ * 会解析 Placemark 中的 name、description、styleUrl（含 Style/StyleMap 匹配）、
+ * TimeSpan/TimeStamp、ExtendedData（Data/SimpleData，值会尝试 JSON.parse）、
+ * LineStyle/PolyStyle（映射为 stroke、fill 等属性），
+ * 以及 Point、LineString、Polygon、Track、gx:Track 几何（含 MultiGeometry、MultiTrack/gx:MultiTrack）。
+ *
+ * @param {Document} doc KML 对应的 XML DOM 文档对象
+ * @returns {Object} GeoJSON FeatureCollection 对象（无要素时 features 为空数组）
+ */
 export function kmlToGeoJSON(doc) {
   const gj = fc()
   // styleindex keeps track of hashed styles in order to match features

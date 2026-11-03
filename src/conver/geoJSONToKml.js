@@ -1,5 +1,21 @@
 // geojson =>  kml
 
+/**
+ * GeoJSON 转 KML。
+ * 支持 FeatureCollection、Feature 及单个 Geometry 对象输入，转换同步完成；
+ * 属性按 simplestyle 规范（marker-*、stroke、fill 等）转换为对应的 KML 样式，其余属性输出为 ExtendedData。
+ * 注意：与 index.js 中 toKml 不同，本方法不做 properties.style 样式映射及闭合线等预处理。
+ *
+ * @param {Object} geojson GeoJSON 对象（FeatureCollection、Feature 或 Geometry）
+ * @param {Object} [options] 转换参数，不传时使用下方默认值
+ * @param {String} [options.name="name"] 读取要素名称的属性名，作为 Placemark 的 name 输出
+ * @param {String} [options.description="description"] 读取要素描述的属性名，作为 Placemark 的 description 输出
+ * @param {String} [options.documentName] 文档（Document）名称，不传时不输出
+ * @param {String} [options.documentDescription] 文档（Document）描述，不传时不输出
+ * @param {Boolean} [options.simplestyle=false] 是否按 simplestyle 规范（marker-*、stroke、fill 等）生成 KML 样式
+ * @param {String} [options.timestamp="timestamp"] 读取时间戳的属性名，作为 Placemark 的 TimeStamp 输出
+ * @returns {String} 转换后的 KML 字符串（含 xml 声明头）
+ */
 export function geoJSONToKml(geojson, options) {
   options = options || {
     documentName: undefined,
@@ -314,6 +330,12 @@ function hashStyle(attr) {
   return hash
 }
 
+/**
+ * hex颜色及透明度转换为KML颜色格式（aabbggrr）
+ * @param {String} hexColor hex颜色值，支持 #rgb、#rrggbb
+ * @param {Number} [opacity] 透明度，取值 0.0~1.0，不传时默认完全不透明（ff）
+ * @returns {String} KML颜色字符串（aabbggrr），无效输入返回空字符串
+ */
 function hexToKmlColor(hexColor, opacity) {
   if (typeof hexColor !== "string") {
     return ""

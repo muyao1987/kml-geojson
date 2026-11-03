@@ -1,8 +1,34 @@
+/**
+ * kml与geojson互转工具类(kgUtil)对外接口
+ * kml/kmz转geojson使用 toGeoJSON，geojson转kml使用 toKml
+ */
 import JSZip from "jszip"
 import { kmlToGeoJSON } from "./conver/kmlToGeoJSON"
 import { geoJSONToKml } from "./conver/geoJSONToKml"
 
-// geojson转kml
+/**
+ * GeoJSON 转 KML 字符串。
+ * 支持 FeatureCollection、Feature、Geometry 对象及 Feature 数组输入；
+ * 当 feature.properties.style 中存在样式时（mars3d 标绘风格），会优先映射为对应的样式属性后再转换。
+ *
+ * @param {Object|Array} geojson GeoJSON 对象（FeatureCollection、Feature 或 Geometry），或 Feature 对象数组
+ * @param {Object} [options] 转换参数，具体配置见 {@link geoJSONToKml}
+ * @param {String} [options.name="name"] 读取要素名称的属性名，作为 Placemark 的 name 输出
+ * @param {String} [options.description="description"] 读取要素描述的属性名，作为 Placemark 的 description 输出
+ * @param {String} [options.documentName] 文档（Document）名称，不传时不输出
+ * @param {String} [options.documentDescription] 文档（Document）描述，不传时不输出
+ * @param {Boolean} [options.simplestyle=false] 是否按 simplestyle 规范（marker-*、stroke、fill 等）生成 KML 样式
+ * @param {String} [options.timestamp="timestamp"] 读取时间戳的属性名，作为 Placemark 的 TimeStamp 输出
+ * @returns {String} 转换后的 KML 字符串
+ *
+ * @example
+ * var kml = kgUtil.toKml(geojsonObject, {
+ *   name: "Mars3D标绘数据",
+ *   documentName: "Mars3D标绘数据文件",
+ *   documentDescription: "标绘数据 by mars3d.cn",
+ *   simplestyle: true
+ * })
+ */
 export function toKml(geojson, options) {
   if (Array.isArray(geojson)) {
     geojson = { type: "FeatureCollection", features: geojson }
@@ -17,6 +43,12 @@ export function toKml(geojson, options) {
   return geoJSONToKml(geojson, options)
 }
 
+/**
+ * 按 feature.properties.style 将样式映射为 simplestyle 规范属性（image、color、outlineColor、html 等），
+ * 并处理闭合线（closure）、polygon 首尾闭合、rectangle 转 Polygon 几何等特殊逻辑
+ * @param {Object} feature GeoJSON Feature 对象（内部会直接修改其属性和几何）
+ * @return {void}
+ */
 function updateFeatureByStyle(feature) {
   if (!feature.properties) {
     return
@@ -87,9 +119,12 @@ function isNumber(obj) {
   return typeof obj === "number" && obj.constructor === Number
 }
 
+// 解析xml字符串为DOM文档对象
 const getDom = (xml) => new DOMParser().parseFromString(xml, "application/xml")
+// 获取文件名中的扩展名
 const getExtension = (fileName) => fileName.split(".").pop()
 
+// 解析kmz压缩包（Blob/File），返回包内首个kml的DOM文档对象的Promise
 const getKmlDom = (kmzFile) => {
   const zip = new JSZip()
   return zip.loadAsync(kmzFile).then((zip) => {
@@ -103,7 +138,32 @@ const getKmlDom = (kmzFile) => {
   })
 }
 
-// kml转geojson
+/**
+ * KML 或 KMZ 转 GeoJSON，按参数类型自动识别以下输入方式：
+ * 1. 以 .kml 或 .kmz 结尾的 url 字符串：fetch 请求后解析（.kmz 会先解压取包内首个 kml）；
+ * 2. 其他字符串：视为 KML XML 文档字符串直接解析；
+ * 3. XML Document 对象（具有 getRootNode 方法）：直接解析；
+ * 4. Blob 或 File 对象（如 input 文件控件选中的文件，.kmz 会先解压取包内首个 kml）：解析后转换。
+ *
+ * @param {String|Document|Blob|File} doc KML/KMZ 数据源，支持 url、XML 字符串、XML Document、Blob/File
+ * @param {Object} [options] 请求 url 时的 fetch 配置（如 method、headers 等），仅 url 方式有效
+ * @returns {Promise<Object>} 转换后的 GeoJSON FeatureCollection 对象；参数为空时打印警告并返回 undefined
+ *
+ * @example 直接加载url
+ * kgUtil.toGeoJSON('//data.mars3d.cn/file/kml/NAVWARN.kmz').then((geojoson) => {
+ *   console.log(geojoson)
+ * })
+ *
+ * @example 加载input文件控件的二进制流
+ * kgUtil.toGeoJSON(this.files[0]).then((geojoson) => {
+ *   console.log(geojoson)
+ * })
+ *
+ * @example 加载kml文档字符串（如ajax请求返回的xml文本）
+ * kgUtil.toGeoJSON(kmlXmlString).then((geojoson) => {
+ *   console.log(geojoson)
+ * })
+ */
 export function toGeoJSON(doc, options) {
   if (!doc) {
     console.warn("toGeoJSON参数不能为空")
@@ -130,7 +190,7 @@ export function toGeoJSON(doc, options) {
       return Promise.resolve(geojson)
     }
   } else if (doc.getRootNode) {
-    // 直接传docmect文档
+    // 直接传document文档
     const geojson = kmlToGeoJSON(doc)
     return Promise.resolve(geojson)
   } else {
@@ -152,6 +212,7 @@ function HTMLEncode(html) {
   return output
 }
 
+// fetch请求kml并解析为DOM文档对象
 function fetchXML(url, options) {
   const requestOptions = {
     method: "GET",
@@ -167,6 +228,7 @@ function fetchXML(url, options) {
     })
 }
 
+// fetch请求kmz并转为Blob对象
 function fetchBlob(url, options) {
   const requestOptions = {
     method: "GET",
